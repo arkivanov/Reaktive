@@ -5,8 +5,8 @@ import kotlinx.cinterop.cValue
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.useContents
 import platform.posix.PTHREAD_MUTEX_RECURSIVE
+import platform.posix.pthread_cond_broadcast
 import platform.posix.pthread_cond_init
-import platform.posix.pthread_cond_signal
 import platform.posix.pthread_cond_t
 import platform.posix.pthread_cond_timedwait
 import platform.posix.pthread_cond_wait
@@ -62,7 +62,7 @@ internal actual class Lock {
         }
 
         override fun signal() {
-            pthread_cond_signal(cond)
+            pthread_cond_broadcast(cond)
         }
 
         private companion object {
