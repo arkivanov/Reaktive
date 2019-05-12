@@ -4,6 +4,7 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.Uninitialized
 import com.badoo.reaktive.utils.atomicreference.AtomicReference
+import com.badoo.reaktive.utils.atomicreference.update
 import com.badoo.reaktive.utils.atomicreference.updateAndGet
 import com.badoo.reaktive.utils.replace
 import com.badoo.reaktive.utils.serializer.serializer
@@ -16,27 +17,38 @@ fun <T, R> Collection<Flowable<T>>.combineLatest(mapper: (List<T>) -> R): Flowab
         val pendingValues = AtomicReference<List<FlowableValue<T>>?>(listOf(), true)
         val activeSourceCount = AtomicReference(size)
 
-        val serializer =
+        @Suppress("UNCHECKED_CAST") val serializer =
             serializer<CombineLatestEvent<T>> { event ->
                 when (event) {
                     is CombineLatestEvent.OnNext -> {
-                        values
-                            .updateAndGet { it.replace(event.index, event.value) }
-                            .takeIf { newValues -> newValues.none { it === Uninitialized } }
-                            ?.let {
-                                @Suppress("UNCHECKED_CAST")
-                                it as List<T>
-                            }
+                        val newValues: List<Any?>? =
+                            values
+                                .updateAndGet { it.replace(event.index, event.value.value) }
+                                .takeIf { newValues -> newValues.none { it === Uninitialized } }
 
-                            ?.let {
+                        if (newValues == null) {
+                            pendingValues.update {
+                                it?.plus(event.value)
+                            }
+                        } else {
+                            val mappedValue =
                                 try {
-                                    mapper(it)
+                                    @Suppress("UNCHECKED_CAST")
+                                    mapper(newValues as List<T>)
                                 } catch (e: Throwable) {
                                     observer.onError(e)
                                     return@serializer false
                                 }
-                            }
-                            ?.also(observer::onNext)
+
+                            observer.onNextBlocking(mappedValue)
+
+                            pendingValues
+                                .value
+                                ?.forEach(FlowableValue<T>::onProcessed)
+                                ?.also { pendingValues.value = null }
+
+                            event.value.onProcessed()
+                        }
 
                         true
                     }

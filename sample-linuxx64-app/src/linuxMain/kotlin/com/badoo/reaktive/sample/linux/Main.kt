@@ -1,15 +1,14 @@
 package com.badoo.reaktive.sample.linux
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.flowable.Flowable
 import com.badoo.reaktive.flowable.FlowableObserver
 import com.badoo.reaktive.flowable.FlowableValue
-import com.badoo.reaktive.flowable.flatMap
+import com.badoo.reaktive.flowable.combineLatest
 import com.badoo.reaktive.flowable.flowable
 import com.badoo.reaktive.flowable.observeOn
 import com.badoo.reaktive.flowable.subscribeOn
 import com.badoo.reaktive.scheduler.ioScheduler
-import com.badoo.reaktive.scheduler.mainScheduler
-import platform.posix.pthread_cond_signal
 import platform.posix.sleep
 import platform.posix.usleep
 import kotlin.system.getTimeMillis
@@ -19,27 +18,13 @@ import kotlin.system.getTimeMillis
  */
 fun main() {
 
-    flowable<Int> { emitter ->
-        repeat(5) {
-            println("Before onNext: $it")
-            emitter.onNext(it)
-            println("After onNext: $it")
-        }
-        emitter.onComplete()
+    combineLatest(
+        List(10) { "1,$it" }.asFlowable(),
+        List(10) { "2,$it" }.asFlowable(),
+        List(10) { "3,$it" }.asFlowable()
+    ) { a, b, c ->
+        "$a;$b;$c"
     }
-        .subscribeOn(ioScheduler)
-        .flatMap { value ->
-            flowable<String> { emitter ->
-                repeat(5) {
-                    val v = "$value,$it"
-                    println("Before onNext: $v")
-                    emitter.onNext(v)
-                    println("After onNext: $v")
-                }
-                emitter.onComplete()
-            }
-                .subscribeOn(ioScheduler)
-        }
         .observeOn(ioScheduler)
 
 //    flowable<Int> { emitter ->
@@ -78,3 +63,14 @@ fun main() {
 fun sleepMs(millis: Long) {
     usleep((millis * 1000L).toUInt())
 }
+
+fun <T> Iterable<T>.asFlowable(): Flowable<T> =
+    flowable<T> { emitter ->
+        forEach {
+            println("Before onNext: $it")
+            emitter.onNext(it)
+            println("After onNext: $it")
+        }
+        emitter.onComplete()
+    }
+        .subscribeOn(ioScheduler)
