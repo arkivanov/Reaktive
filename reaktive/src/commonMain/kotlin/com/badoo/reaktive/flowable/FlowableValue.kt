@@ -1,7 +1,5 @@
 package com.badoo.reaktive.flowable
 
-import com.badoo.reaktive.utils.SimpleCondition
-
 interface FlowableValue<out T> {
 
     val value: T
@@ -9,12 +7,12 @@ interface FlowableValue<out T> {
     fun onProcessed()
 
     companion object {
-        operator fun <T> invoke(value: T, condition: SimpleCondition): FlowableValue<T> =
+        inline operator fun <T> invoke(value: T, crossinline onProcessed: () -> Unit): FlowableValue<T> =
             object : FlowableValue<T> {
                 override val value: T = value
 
                 override fun onProcessed() {
-                    condition.signal()
+                    onProcessed.invoke()
                 }
             }
     }

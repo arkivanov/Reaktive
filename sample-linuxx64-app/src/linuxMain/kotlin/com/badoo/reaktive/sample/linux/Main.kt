@@ -9,7 +9,10 @@ import com.badoo.reaktive.flowable.combineLatest
 import com.badoo.reaktive.flowable.flowable
 import com.badoo.reaktive.flowable.observeOn
 import com.badoo.reaktive.flowable.subscribeOn
+import com.badoo.reaktive.observable.observable
+import com.badoo.reaktive.observable.observeOn
 import com.badoo.reaktive.scheduler.ioScheduler
+import com.badoo.reaktive.scheduler.mainScheduler
 import platform.posix.sleep
 import platform.posix.usleep
 import kotlin.system.getTimeMillis
@@ -19,31 +22,26 @@ import kotlin.system.getTimeMillis
  */
 fun main() {
 
-    println("start")
-    List(100) {index ->
-        List(10) { "$index,$it" }.asFlowable()
+    val s = ioScheduler
+    flowable<String> { emitter ->
+        repeat(30) {
+            println("Before onNext: $it")
+            emitter.onNext(it.toString())
+            println("After onNext: $it")
+            sleepMs(100L)
+        }
+        emitter.onComplete()
     }
-        .combineLatest { it.joinToString(separator = ";") }
-        .observeOn(ioScheduler, BackPressureStrategy(bufferSize = 0, overflowStrategy = BackPressureStrategy.OverflowStrategy.DROP_OLDEST))
-
-//    flowable<Int> { emitter ->
-//        repeat(5) {
-//            println("Before onNext: $it")
-//            emitter.onNext(it)
-//            println("After onNext: $it")
-//        }
-//        emitter.onComplete()
-//    }
-//        .observeOn(mainScheduler)
+        .observeOn(s, BackPressureStrategy(1, BackPressureStrategy.OverflowStrategy.DROP_LATEST))
         .subscribe(
             object : FlowableObserver<String> {
                 override fun onSubscribe(disposable: Disposable) {
                 }
 
                 override fun onNext(value: FlowableValue<String>) {
-//                    println("${getTimeMillis()}: Received ${value.value}")
-//                    sleepMs(10L)
-//                    println("${getTimeMillis()}: Processed ${value.value}")
+                    println("${getTimeMillis()}: Received ${value.value}")
+                    sleepMs(1000L)
+                    println("${getTimeMillis()}: Processed ${value.value}")
                     value.onProcessed()
                 }
 
@@ -52,6 +50,7 @@ fun main() {
                 }
 
                 override fun onError(error: Throwable) {
+                    error.printStackTrace()
                 }
             }
         )

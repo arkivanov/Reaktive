@@ -19,7 +19,7 @@ fun <T, R> Flowable<T>.flatMap(mapper: (T) -> Flowable<R>): Flowable<R> =
             object : FlowableObserver<T>, ErrorCallback by serializedObserver {
                 private val activeSourceCount = AtomicReference(1)
 
-                private val mappedObserver =
+                private val mappedObserver: FlowableObserver<R> =
                     object : FlowableObserver<R>, Observer by this, CompletableCallbacks by this {
                         override fun onNext(value: FlowableValue<R>) {
                             serializedObserver.onNext(value)

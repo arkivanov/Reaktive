@@ -8,7 +8,7 @@ import com.badoo.reaktive.utils.atomicreference.getAndUpdate
 
 fun <T> Flowable<T>.observeOn(
     scheduler: Scheduler,
-    backPressureStrategy: BackPressureStrategy = BackPressureStrategy.DEFAULT
+    backPressureStrategy: BackPressureStrategy = BackPressureStrategy()
 ): Flowable<T> =
     flowableSafe { observer ->
         val disposables = CompositeDisposable()
@@ -25,15 +25,45 @@ fun <T> Flowable<T>.observeOn(
                 }
 
                 override fun onNext(value: FlowableValue<T>) {
-                    state
-                        .getAndUpdate {
-                            it.copy(
-                                buffer = it.buffer + value,
-                                isDraining = true
-                            )
+                    try {
+                        state
+                            .getAndUpdate {
+                                it.addItem(value.value) ?: return
+                            }
+                            .isDraining
+                            .takeUnless { it }
+                            ?.also { drain() }
+                    } finally {
+                        value.onProcessed()
+                    }
+                }
+
+                private fun <T> State<T>.addItem(item: T): State<T>? {
+                    val newBuffer =
+                        if (!isDraining || (buffer.size < backPressureStrategy.bufferSize)) {
+                            buffer + item
+                        } else {
+                            when (backPressureStrategy.overflowStrategy) {
+                                BackPressureStrategy.OverflowStrategy.DROP_OLDEST -> {
+                                    val oldList = buffer
+                                    val newList = ArrayList<T>(buffer.size)
+                                    for (i in 1 until oldList.size) {
+                                        newList += oldList[i]
+                                    }
+                                    newList += item
+                                    newList
+                                }
+
+                                BackPressureStrategy.OverflowStrategy.DROP_LATEST -> buffer
+
+                                BackPressureStrategy.OverflowStrategy.ERROR -> {
+                                    observer.onError(MissingBackPressureException())
+                                    return null
+                                }
+                            }
                         }
-                        .takeUnless(State<*>::isDraining)
-                        ?.also { drain() }
+
+                    return copy(buffer = newBuffer, isDraining = true)
                 }
 
                 private fun drain() {
@@ -51,7 +81,7 @@ fun <T> Flowable<T>.observeOn(
                                 break
                             }
 
-                            observer.onNext(oldState.buffer[0])
+                            observer.onNextBlocking(oldState.buffer[0])
                         }
                     }
                 }
@@ -72,6 +102,6 @@ fun <T> Flowable<T>.observeOn(
     }
 
 private data class State<out T>(
-    val buffer: List<FlowableValue<T>> = emptyList(),
+    val buffer: List<T> = emptyList(),
     val isDraining: Boolean = false
 )

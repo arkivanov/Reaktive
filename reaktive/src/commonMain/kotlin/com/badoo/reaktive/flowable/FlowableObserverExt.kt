@@ -45,7 +45,7 @@ fun <T> FlowableObserver<T>.safe(): FlowableObserver<T> =
 fun <T> FlowableObserver<T>.onNextBlocking(value: T) {
     SimpleCondition()
         .use { condition ->
-            onNext(FlowableValue(value, condition))
+            onNext(FlowableValue(value, condition::signal))
             condition.await()
         }
 }
