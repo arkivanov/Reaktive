@@ -5,15 +5,15 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 
 fun <T> flowable(onSubscribe: (FlowableEmitter<T>) -> Unit): Flowable<T> =
-    flowableSafe {
+    flowableSafe { observer ->
         val disposableWrapper = DisposableWrapper()
-        it.onSubscribe(disposableWrapper)
-        val callbacks = BlockingFlowableCallbacks(it)
+        observer.onSubscribe(disposableWrapper)
+        val blockingCallbacks = observer.blocking()
 
         val emitter =
-            object : FlowableEmitter<T>, CompletableCallbacks by callbacks {
+            object : FlowableEmitter<T>, CompletableCallbacks by blockingCallbacks {
                 override fun onNext(value: T) {
-                    callbacks.onNext(value)
+                    blockingCallbacks.onNext(value)
                 }
 
                 override fun setDisposable(disposable: Disposable) {
@@ -24,6 +24,6 @@ fun <T> flowable(onSubscribe: (FlowableEmitter<T>) -> Unit): Flowable<T> =
         try {
             onSubscribe(emitter)
         } catch (e: Throwable) {
-            callbacks.onError(e)
+            blockingCallbacks.onError(e)
         }
     }

@@ -14,10 +14,6 @@ import com.badoo.reaktive.flowable.flowable
 import com.badoo.reaktive.flowable.observeOn
 import com.badoo.reaktive.flowable.subscribeOn
 import com.badoo.reaktive.scheduler.ioScheduler
-import io.reactivex.BackpressureStrategy
-import io.reactivex.FlowableSubscriber
-import io.reactivex.schedulers.Schedulers
-import org.reactivestreams.Subscription
 
 class MainActivity : AppCompatActivity() {
 

@@ -22,8 +22,4 @@ class SimpleCondition {
             condition.signal()
         }
     }
-
-    fun reset() {
-        flag.value = false
-    }
 }

@@ -5,26 +5,24 @@ import com.badoo.reaktive.base.Observer
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.SimpleCondition
 import com.badoo.reaktive.utils.atomicreference.AtomicReference
 import com.badoo.reaktive.utils.atomicreference.update
 import com.badoo.reaktive.utils.atomicreference.updateAndGet
 
 fun <T, R> Flowable<T>.flatMap(mapper: (T) -> Flowable<R>): Flowable<R> =
-    flowableSafe {
+    flowableSafe { observer ->
         val disposables = CompositeDisposable()
-        it.onSubscribe(disposables)
-        val callbacks = BlockingFlowableCallbacks(it)
-        val serializedObserver = callbacks.serialize()
+        observer.onSubscribe(disposables)
+        val serializedCallbacks = observer.serialize()
 
         subscribeSafe(
-            object : FlowableObserver<T>, ErrorCallback by serializedObserver {
+            object : FlowableObserver<T>, ErrorCallback by serializedCallbacks {
                 private val activeSourceCount = AtomicReference(1)
 
                 private val mappedObserver: FlowableObserver<R> =
                     object : FlowableObserver<R>, Observer by this, CompletableCallbacks by this {
                         override fun onNext(value: FlowableValue<R>) {
-                            serializedObserver.onNext(value)
+                            serializedCallbacks.onNext(value)
                         }
                     }
 
@@ -50,7 +48,7 @@ fun <T, R> Flowable<T>.flatMap(mapper: (T) -> Flowable<R>): Flowable<R> =
 
                 override fun onComplete() {
                     if (activeSourceCount.updateAndGet { it - 1 } <= 0) {
-                        serializedObserver.onComplete()
+                        serializedCallbacks.onComplete()
                     }
                 }
             }

@@ -42,6 +42,7 @@ if (target.isCommon() || target.isMeta()) {
     kotlin {
         targets {
             fromPreset(presets.jvm, 'jvm')
+//            fromPreset(presets.jvm, 'jvmCommon')
             fromPreset(presets.android, 'android')
             fromPreset(presets.js, 'js')
             fromPreset(presets.linuxX64, 'linuxX64')
