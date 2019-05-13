@@ -23,8 +23,7 @@ class SimpleCondition {
         }
     }
 
-    fun destroy() {
-        condition.destroy()
-        lock.destroy()
+    fun reset() {
+        flag.value = false
     }
 }

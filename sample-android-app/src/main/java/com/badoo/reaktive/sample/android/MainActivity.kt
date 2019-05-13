@@ -13,13 +13,11 @@ import com.badoo.reaktive.flowable.flatMap
 import com.badoo.reaktive.flowable.flowable
 import com.badoo.reaktive.flowable.observeOn
 import com.badoo.reaktive.flowable.subscribeOn
-import com.badoo.reaktive.observable.ObservableObserver
-import com.badoo.reaktive.observable.flatMap
-import com.badoo.reaktive.observable.observable
-import com.badoo.reaktive.observable.observeOn
-import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.observable.subscribeOn
 import com.badoo.reaktive.scheduler.ioScheduler
+import io.reactivex.BackpressureStrategy
+import io.reactivex.FlowableSubscriber
+import io.reactivex.schedulers.Schedulers
+import org.reactivestreams.Subscription
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             Log.v("MyTest", "started")
             val startTime = SystemClock.uptimeMillis()
 
-            observable<Int> { emitter ->
+            flowable<Int> { emitter ->
                 repeat(100) {
                     emitter.onNext(it)
                 }
@@ -42,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             }
                 .subscribeOn(ioScheduler)
                 .flatMap { index ->
-                    observable<String> { emitter ->
+                    flowable<String> { emitter ->
                         repeat(100) {
                             emitter.onNext("$index,$it")
                         }
@@ -52,11 +50,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 .observeOn(ioScheduler)
                 .subscribe(
-                    object : ObservableObserver<String> {
+                    object : FlowableObserver<String> {
                         override fun onSubscribe(disposable: Disposable) {
                         }
 
-                        override fun onNext(value: String) {
+                        override fun onNext(value: FlowableValue<String>) {
+                            value.onProcessed()
                         }
 
                         override fun onComplete() {
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
 
-//            Flowable
+//            io.reactivex.Flowable
 //                .create<Int>(
 //                    { emitter ->
 //                        repeat(100) {
@@ -79,20 +78,25 @@ class MainActivity : AppCompatActivity() {
 //                    BackpressureStrategy.BUFFER
 //                )
 //                .subscribeOn(Schedulers.io())
-//                .flatMap { index ->
-//                    Flowable
-//                        .create<String>(
-//                            { emitter ->
-//                                repeat(1000) {
-//                                    emitter.onNext("$index,$it")
-//                                }
-//                                emitter.onComplete()
-//                            },
-//                            BackpressureStrategy.BUFFER
-//                        )
-//                        .subscribeOn(Schedulers.io())
-//                }
-//                .observeOn(Schedulers.io())
+//                .flatMap(
+//                    { index ->
+//                        io.reactivex.Flowable
+//                            .create<String>(
+//                                { emitter ->
+//                                    repeat(100) {
+//                                        emitter.onNext("$index,$it")
+//                                    }
+//                                    emitter.onComplete()
+//                                },
+//                                BackpressureStrategy.BUFFER
+//                            )
+//                            .subscribeOn(Schedulers.io())
+//                    },
+//                    false,
+//                    1000,
+//                    1
+//                )
+//                .observeOn(Schedulers.io(), false, 1)
 //                .subscribe(
 //                    object : FlowableSubscriber<String> {
 //                        private lateinit var sub: Subscription

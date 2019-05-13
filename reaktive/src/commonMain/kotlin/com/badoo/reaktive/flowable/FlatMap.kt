@@ -5,15 +5,17 @@ import com.badoo.reaktive.base.Observer
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.utils.SimpleCondition
 import com.badoo.reaktive.utils.atomicreference.AtomicReference
 import com.badoo.reaktive.utils.atomicreference.update
 import com.badoo.reaktive.utils.atomicreference.updateAndGet
 
 fun <T, R> Flowable<T>.flatMap(mapper: (T) -> Flowable<R>): Flowable<R> =
-    flowableSafe { observer ->
+    flowableSafe {
         val disposables = CompositeDisposable()
-        observer.onSubscribe(disposables)
-        val serializedObserver = observer.serialize()
+        it.onSubscribe(disposables)
+        val callbacks = BlockingFlowableCallbacks(it)
+        val serializedObserver = callbacks.serialize()
 
         subscribeSafe(
             object : FlowableObserver<T>, ErrorCallback by serializedObserver {

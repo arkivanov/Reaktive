@@ -2,7 +2,6 @@ package com.badoo.reaktive.flowable
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.SimpleCondition
-import com.badoo.reaktive.utils.use
 
 fun <T> FlowableObserver<T>.safe(): FlowableObserver<T> =
     object : FlowableObserver<T> {
@@ -42,10 +41,9 @@ fun <T> FlowableObserver<T>.safe(): FlowableObserver<T> =
         }
     }
 
-fun <T> FlowableObserver<T>.onNextBlocking(value: T) {
-    SimpleCondition()
-        .use { condition ->
-            onNext(FlowableValue(value, condition::signal))
-            condition.await()
-        }
-}
+//fun <T> FlowableObserver<T>.onNextBlocking(value: T) {
+//    SimpleCondition().also { condition ->
+//        onNext(FlowableValue(value, condition::signal))
+//        condition.await()
+//    }
+//}

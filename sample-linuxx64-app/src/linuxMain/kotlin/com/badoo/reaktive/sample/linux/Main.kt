@@ -25,9 +25,7 @@ fun main() {
     val s = ioScheduler
     flowable<String> { emitter ->
         repeat(30) {
-            println("Before onNext: $it")
             emitter.onNext(it.toString())
-            println("After onNext: $it")
             sleepMs(100L)
         }
         emitter.onComplete()

@@ -1,14 +1,13 @@
 package com.badoo.reaktive.flowable
 
-import com.badoo.reaktive.base.Observer
 import com.badoo.reaktive.utils.serializer.Serializer
 import com.badoo.reaktive.utils.serializer.serializer
 
-fun <T> FlowableObserver<T>.serialize(): FlowableObserver<T> = SerializedFlowableObserver(this)
+internal fun <T> FlowableCallbacks<T>.serialize(): FlowableCallbacks<FlowableValue<T>> = SerializedFlowableCallbacks(this)
 
-private class SerializedFlowableObserver<in T>(
-    private val delegate: FlowableObserver<T>
-) : FlowableObserver<T>, Observer by delegate {
+private class SerializedFlowableCallbacks<in T>(
+    private val delegate: FlowableCallbacks<T>
+) : FlowableCallbacks<FlowableValue<T>> {
 
     private val serializer: Serializer<Any?> =
         serializer { event ->
@@ -20,9 +19,9 @@ private class SerializedFlowableObserver<in T>(
 
                 false
             } else {
-                @Suppress("UNCHECKED_CAST") // Either Event or T to avoid unnecessary allocations
+//                @Suppress("UNCHECKED_CAST") // Either Event or T to avoid unnecessary allocations
                 val value = event as FlowableValue<T>
-                delegate.onNextBlocking(value.value)
+                delegate.onNext(value.value)
                 value.onProcessed()
 
                 true

@@ -40,7 +40,7 @@ fun <T, R> Collection<Flowable<T>>.combineLatest(mapper: (List<T>) -> R): Flowab
                                     return@serializer false
                                 }
 
-                            observer.onNextBlocking(mappedValue)
+//                            observer.onNextBlocking(mappedValue)
 
                             pendingValues
                                 .value
