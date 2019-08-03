@@ -7,6 +7,7 @@ include ':reaktive'
 include ':reaktive-test'
 include ':reaktive-annotations'
 if (target.isCommon()) {
+    include ':sample-mpp-module'
     include ':sample-android-app'
     include ':sample-js-browser-app'
     include ':sample-linuxx64-app'
