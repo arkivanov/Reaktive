@@ -1,5 +1,5 @@
 package com.badoo.reaktive.samplemppmodule
 
-data class Kittie(
+data class Kitten(
     val url: String
 )

@@ -3,7 +3,7 @@ package com.badoo.reaktive.samplemppmodule
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
 
-interface KittiesStore : Disposable {
+interface KittenStore : Disposable {
 
     val states: Observable<State>
 
@@ -11,10 +11,12 @@ interface KittiesStore : Disposable {
 
     data class State(
         val isLoading: Boolean = false,
-        val kitties: List<Kittie> = emptyList()
+        val error: SingleLifeEvent<Unit>? = null,
+        val kitten: Kitten? = null
     )
 
     sealed class Intent {
         object Reload : Intent()
     }
 }
+

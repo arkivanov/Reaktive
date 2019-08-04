@@ -3,17 +3,19 @@ package com.badoo.reaktive.samplemppmodule
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.samplemppmodule.KittiesStore.Intent
-import com.badoo.reaktive.samplemppmodule.KittiesStore.State
+import com.badoo.reaktive.samplemppmodule.KittenStore.Intent
+import com.badoo.reaktive.samplemppmodule.KittenStore.State
+import com.badoo.reaktive.scheduler.computationScheduler
 import com.badoo.reaktive.scheduler.mainScheduler
 import com.badoo.reaktive.single.map
 import com.badoo.reaktive.single.observeOn
 import com.badoo.reaktive.single.subscribe
 import com.badoo.reaktive.subject.behavior.behaviorSubject
 
-internal class KittiesStoreImpl(
-    private val loader: KittiesLoader
-) : KittiesStore {
+internal class KittenStoreImpl(
+    private val loader: KittenLoader,
+    private val parser: KittenParser
+) : KittenStore {
 
     private val _states = behaviorSubject(State())
     override val states: Observable<State> = _states
@@ -40,12 +42,15 @@ internal class KittiesStoreImpl(
         if (state.isLoading) {
             null
         } else {
+            onResult(Result.LoadingStarted)
+
             loader
                 .load()
+                .observeOn(computationScheduler)
                 .map {
                     when (it) {
-                        is KittiesLoader.Result.Success -> Result.Loaded(it.kitties)
-                        is KittiesLoader.Result.Error -> Result.LoadingFailed
+                        is KittenLoader.Result.Success -> Result.Loaded(parser.parse(it.json))
+                        is KittenLoader.Result.Error -> Result.LoadingFailed
                     }
                 }
                 .observeOn(mainScheduler)
@@ -53,16 +58,21 @@ internal class KittiesStoreImpl(
         }
 
     private fun onResult(result: Result) {
-        _states.onNext(Reducer(_states.value, result))
+        _states.onNext(Reducer(result, _states.value))
     }
 
     private sealed class Result {
         object LoadingStarted : Result()
-        class Loaded(val kitties: List<Kittie>) : Result()
+        class Loaded(val kitten: Kitten) : Result()
         object LoadingFailed : Result()
     }
 
     private object Reducer {
-        operator fun invoke(state: State, result: Result): State = TODO()
+        operator fun invoke(result: Result, state: State): State =
+            when (result) {
+                is Result.LoadingStarted -> state.copy(isLoading = true, error = null, kitten = null)
+                is Result.Loaded -> state.copy(isLoading = false, error = null, kitten = result.kitten)
+                is Result.LoadingFailed -> state.copy(isLoading = false, error = SingleLifeEvent(Unit))
+            }
     }
 }

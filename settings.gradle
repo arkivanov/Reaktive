@@ -1,3 +1,16 @@
+pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "kotlin-multiplatform") {
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+            }
+            if (requested.id.id == "kotlinx-serialization") {
+                useModule("org.jetbrains.kotlin:kotlin-serialization:${requested.version}")
+            }
+        }
+    }
+}
+
 enableFeaturePreview('GRADLE_METADATA')
 
 final target = Target.currentTarget()
@@ -6,8 +19,8 @@ println("Current environment: $target")
 include ':reaktive'
 include ':reaktive-test'
 include ':reaktive-annotations'
+include ':sample-mpp-module'
 if (target.isCommon()) {
-    include ':sample-mpp-module'
     include ':sample-android-app'
     include ':sample-js-browser-app'
     include ':sample-linuxx64-app'

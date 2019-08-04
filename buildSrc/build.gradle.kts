@@ -14,4 +14,5 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${property("kotlin_version")}")
     implementation("com.android.tools.build:gradle:${property("android_gradle_version")}")
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:${property("bintray_gradle_version")}")
+    implementation("org.jetbrains.kotlin:kotlin-serialization:${property("kotlin_version")}")
 }
