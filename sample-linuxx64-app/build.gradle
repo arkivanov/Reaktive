@@ -1,5 +1,6 @@
 plugins {
     id 'kotlin-multiplatform'
+//    id 'kotlinx-serialization'
 }
 
 kotlin {
@@ -10,12 +11,34 @@ kotlin {
                 runTask?.args('')
             }
         }
+
+        compilations.main.cinterops {
+            gtk3 {
+                ['/opt/local/include',
+                 '/usr/include',
+                 '/usr/local/include'
+                ].each {
+                    includeDirs "$it/atk-1.0",
+                            "$it/gdk-pixbuf-2.0",
+                            "$it/cairo",
+                            "$it/pango-1.0",
+                            "$it/gtk-3.0",
+                            "$it/glib-2.0"
+                }
+                includeDirs '/opt/local/lib/glib-2.0/include',
+                        '/usr/lib/x86_64-linux-gnu/glib-2.0/include',
+                        '/usr/local/lib/glib-2.0/include'
+            }
+        }
     }
 
     sourceSets {
         linuxMain {
             dependencies {
+//                implementation 'io.ktor:ktor-client-core:1.2.3'
+//                implementation 'io.ktor:ktor-client-curl:1.2.3'
                 implementation project(':reaktive')
+                implementation project(':sample-mpp-module')
             }
         }
     }

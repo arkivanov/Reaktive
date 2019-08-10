@@ -3,6 +3,7 @@ package com.badoo.reaktive.samplemppmodule
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.utils.atomic.AtomicReference
 
 class KittenBinder(
     storeBuilder: KittenStoreBuilder
@@ -10,15 +11,16 @@ class KittenBinder(
 
     private var disposables = CompositeDisposable()
     private val store = storeBuilder.build()
-    private var view: KittenView? = null
+    private var view = AtomicReference<KittenView?>(null, true)
 
     fun onViewCreated(view: KittenView) {
-        this.view = view
+        this.view.value = view
     }
 
     fun onStart() {
         disposables +=
-            view!!
+            view
+                .value!!
                 .events
                 .map(KittenViewEventToIntentMapper::invoke)
                 .subscribe(onNext = store::accept)
@@ -27,7 +29,7 @@ class KittenBinder(
             store
                 .states
                 .map(KittenStateToViewModelMapper::invoke)
-                .subscribe(onNext = { view!!.show(it) })
+                .subscribe(onNext = { view.value!!.show(it) })
     }
 
     fun onStop() {
@@ -35,7 +37,7 @@ class KittenBinder(
     }
 
     fun onViewDestroyed() {
-        view = null
+        view.value = null
     }
 
     fun onDestroy() {

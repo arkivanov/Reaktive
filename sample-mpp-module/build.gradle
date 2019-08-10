@@ -1,21 +1,20 @@
-apply plugin: 'kotlinx-serialization'
-
 setupMultiplatformLibrary(project)
 
 kotlin {
+    linuxX64("linuxX64") {
+        compilations.main.cinterops {
+            libcurl {
+                includeDirs.headerFilterOnly '/usr/include', '/usr/include/x86_64-linux-gnu'
+            }
+        }
+    }
+
     sourceSets {
         commonMain {
             dependencies {
                 implementation kotlin('test-common')
                 implementation project(':reaktive')
                 implementation project(':reaktive-annotations')
-                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:0.11.1"
-            }
-        }
-
-        jsMain {
-            dependencies {
-                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:0.11.1"
             }
         }
     }

@@ -1,18 +1,8 @@
 package com.badoo.reaktive.samplemppmodule
 
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.json.JsonObject
-
 internal class KittenParser {
 
-    private val parser = Json(JsonConfiguration.Stable)
+    private val regex = "(?:\"url\":\")(.*?)(?:\")".toRegex()
 
-    fun parse(json: String): Kitten {
-        val jsonObject: JsonObject = parser.parseJson(json).jsonArray[0].jsonObject
-
-        return Kitten(
-            url = jsonObject.getPrimitive("url").content
-        )
-    }
+    fun parse(json: String): Kitten = Kitten(url = regex.find(json)!!.groupValues[1])
 }
