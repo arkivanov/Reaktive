@@ -1,7 +1,7 @@
 package com.badoo
 
-import com.badoo.reaktive.samplemppmodule.AbstractKittenView
-import com.badoo.reaktive.samplemppmodule.KittenView
+import com.badoo.reaktive.samplemppmodule.view.AbstractKittenView
+import com.badoo.reaktive.samplemppmodule.view.KittenView
 import org.w3c.dom.Image
 import kotlin.browser.document
 

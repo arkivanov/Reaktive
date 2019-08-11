@@ -1,4 +1,4 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.store
 
 import com.badoo.reaktive.annotations.EventsOnAnyScheduler
 import com.badoo.reaktive.single.Single

@@ -1,10 +1,11 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.store
 
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.samplemppmodule.KittenStore.Intent
-import com.badoo.reaktive.samplemppmodule.KittenStore.State
+import com.badoo.reaktive.samplemppmodule.SingleLifeEvent
+import com.badoo.reaktive.samplemppmodule.store.KittenStore.Intent
+import com.badoo.reaktive.samplemppmodule.store.KittenStore.State
 import com.badoo.reaktive.scheduler.computationScheduler
 import com.badoo.reaktive.scheduler.mainScheduler
 import com.badoo.reaktive.single.map
@@ -49,7 +50,7 @@ internal class KittenStoreImpl(
                 .observeOn(computationScheduler)
                 .map {
                     when (it) {
-                        is KittenLoader.Result.Success -> Result.Loaded(parser.parse(it.json))
+                        is KittenLoader.Result.Success -> Result.Loaded(parser.parseUrl(it.json))
                         is KittenLoader.Result.Error -> Result.LoadingFailed
                     }
                 }
@@ -63,15 +64,15 @@ internal class KittenStoreImpl(
 
     private sealed class Result {
         object LoadingStarted : Result()
-        class Loaded(val kitten: Kitten) : Result()
+        class Loaded(val kittenUrl: String?) : Result()
         object LoadingFailed : Result()
     }
 
     private object Reducer {
         operator fun invoke(result: Result, state: State): State =
             when (result) {
-                is Result.LoadingStarted -> state.copy(isLoading = true, error = null, kitten = null)
-                is Result.Loaded -> state.copy(isLoading = false, error = null, kitten = result.kitten)
+                is Result.LoadingStarted -> state.copy(isLoading = true, error = null, kittenUrl = null)
+                is Result.Loaded -> state.copy(isLoading = false, error = null, kittenUrl = result.kittenUrl)
                 is Result.LoadingFailed -> state.copy(isLoading = false, error = SingleLifeEvent(Unit))
             }
     }

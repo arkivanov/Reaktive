@@ -4,9 +4,9 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.samplemppmodule.KittenView
-import com.badoo.reaktive.samplemppmodule.KittenView.Event
-import com.badoo.reaktive.samplemppmodule.KittenView.ViewModel
+import com.badoo.reaktive.samplemppmodule.view.KittenView
+import com.badoo.reaktive.samplemppmodule.view.KittenView.Event
+import com.badoo.reaktive.samplemppmodule.view.KittenView.ViewModel
 import com.badoo.reaktive.subject.publish.publishSubject
 import com.squareup.picasso.Picasso
 

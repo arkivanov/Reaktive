@@ -1,6 +1,6 @@
 package com.badoo
 
-import com.badoo.reaktive.samplemppmodule.KittenBinder
+import com.badoo.reaktive.samplemppmodule.binder.KittenBinder
 import com.badoo.reaktive.samplemppmodule.KittenStoreBuilderImpl
 import org.w3c.dom.get
 import kotlin.browser.document

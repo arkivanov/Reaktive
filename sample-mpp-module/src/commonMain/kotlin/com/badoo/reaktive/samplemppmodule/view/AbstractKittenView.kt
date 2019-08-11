@@ -1,7 +1,7 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.view
 
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.samplemppmodule.KittenView.Event
+import com.badoo.reaktive.samplemppmodule.view.KittenView.Event
 import com.badoo.reaktive.subject.publish.publishSubject
 
 abstract class AbstractKittenView : KittenView {

@@ -1,6 +1,7 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.view
 
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.samplemppmodule.SingleLifeEvent
 
 interface KittenView {
 

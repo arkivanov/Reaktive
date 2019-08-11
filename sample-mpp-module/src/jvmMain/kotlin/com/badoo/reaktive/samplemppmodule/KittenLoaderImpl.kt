@@ -1,6 +1,7 @@
 package com.badoo.reaktive.samplemppmodule
 
-import com.badoo.reaktive.samplemppmodule.KittenLoader.Result
+import com.badoo.reaktive.samplemppmodule.store.KittenLoader
+import com.badoo.reaktive.samplemppmodule.store.KittenLoader.Result
 import com.badoo.reaktive.scheduler.ioScheduler
 import com.badoo.reaktive.single.Single
 import com.badoo.reaktive.single.onErrorReturnValue

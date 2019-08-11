@@ -1,7 +1,8 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.store
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.samplemppmodule.SingleLifeEvent
 
 interface KittenStore : Disposable {
 
@@ -12,7 +13,7 @@ interface KittenStore : Disposable {
     data class State(
         val isLoading: Boolean = false,
         val error: SingleLifeEvent<Unit>? = null,
-        val kitten: Kitten? = null
+        val kittenUrl: String? = null
     )
 
     sealed class Intent {

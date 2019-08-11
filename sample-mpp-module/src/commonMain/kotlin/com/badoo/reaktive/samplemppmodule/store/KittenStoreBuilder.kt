@@ -1,4 +1,4 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.store
 
 interface KittenStoreBuilder {
 

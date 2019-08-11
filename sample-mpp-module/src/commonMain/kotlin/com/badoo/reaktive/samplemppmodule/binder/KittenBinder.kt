@@ -1,8 +1,10 @@
-package com.badoo.reaktive.samplemppmodule
+package com.badoo.reaktive.samplemppmodule.binder
 
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.samplemppmodule.store.KittenStoreBuilder
+import com.badoo.reaktive.samplemppmodule.view.KittenView
 import com.badoo.reaktive.utils.atomic.AtomicReference
 
 class KittenBinder(

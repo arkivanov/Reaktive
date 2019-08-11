@@ -1,14 +1,14 @@
 package com.badoo.reaktive.sample.linux
 
-import kotlinx.cinterop.reinterpret
-import libgtk3.G_APPLICATION_FLAGS_NONE
-import libgtk3.g_application_run
-import libgtk3.g_object_unref
-import libgtk3.gtk_application_new
+import com.badoo.gtk3.application.run
+import com.badoo.gtk3.application.uiApplication
+import com.badoo.gtk3.pointer.connectSignal
+import com.badoo.gtk3.pointer.unref
+import kotlinx.cinterop.staticCFunction
+import libgtk3.gpointer
 
-private const val WINDOW_WIDTH = 400
-private const val WINDOW_HEIGHT = 300
-private const val WINDOW_BORDER_WIDTH = 8U
+private val application = uiApplication("com.badoo.reaktive.sample.linux")
+private lateinit var mainWindow: MainWindow
 
 /**
  * How to run:
@@ -16,36 +16,16 @@ private const val WINDOW_BORDER_WIDTH = 8U
  * * Execute ":sample-linuxx64-app:runDebugExecutableLinux" Gradle task
  */
 fun main() {
-    val app = gtk_application_new("com.badoo.reaktive.sample.linux", G_APPLICATION_FLAGS_NONE)!!
+    application.connectSignal("activate", staticCFunction(::activate))
+    application.connectSignal("shutdown", staticCFunction(::shutdown))
+    application.run()
+    application.unref()
+}
 
-//    val binder = KittenBinder(KittenStoreBuilderImpl())
-//    var view: KittenViewImpl? = null
-//    var window: CPointer<GtkWindow>? = null
+private fun activate(@Suppress("UNUSED_PARAMETER") app: gpointer) {
+    mainWindow = MainWindow(application)
+}
 
-    val activateHandlerId =
-        app.connectSignal("activate") {
-            //        val w: CPointer<GtkWindow> = gtk_application_window_new(app)!!.reinterpret()
-//        window = w
-//        gtk_window_set_title(w, "Kittens")
-//        gtk_window_set_default_size(w, WINDOW_WIDTH, WINDOW_HEIGHT)
-//        gtk_window_set_resizable(w, 0)
-//        gtk_container_set_border_width(w.reinterpret(), WINDOW_BORDER_WIDTH)
-
-//        view = KittenViewImpl(w.reinterpret())
-//        binder.onViewCreated(view!!)
-//        gtk_widget_show_all(w.reinterpret())
-//        binder.onStart()
-        }
-
-//    app.connectSignal("shutdown") {
-//        view!!.destroy()
-//        window!!.unref()
-//        binder.onStop()
-//        binder.onViewDestroyed()
-//        binder.onDestroy()
-//    }
-
-    g_application_run(app.reinterpret(), 0, null)
-    app.disconnectSignal(activateHandlerId)
-    g_object_unref(app)
+private fun shutdown(@Suppress("UNUSED_PARAMETER") app: gpointer) {
+    mainWindow.destroy()
 }
