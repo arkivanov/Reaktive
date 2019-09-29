@@ -1,5 +1,5 @@
 package com.badoo.reaktive.scheduler
 
-import com.badoo.reaktive.looperthread.CachedLooperThreadStrategy
+import com.badoo.reaktive.looperthread.CachedWorkerStrategy
 
-actual fun createIoScheduler(): Scheduler = SchedulerImpl(CachedLooperThreadStrategy(keepAliveTimeoutMillis = 60000L))
+actual fun createIoScheduler(): Scheduler = SchedulerImpl(CachedWorkerStrategy(keepAliveTimeoutMillis = 60000L))

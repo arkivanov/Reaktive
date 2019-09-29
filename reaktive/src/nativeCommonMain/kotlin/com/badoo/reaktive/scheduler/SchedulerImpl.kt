@@ -1,42 +1,44 @@
 package com.badoo.reaktive.scheduler
 
 import com.badoo.reaktive.disposable.CompositeDisposable
-import com.badoo.reaktive.looperthread.LooperThreadStrategy
-import kotlin.native.concurrent.AtomicInt
-import kotlin.system.getTimeMillis
+import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.looperthread.WorkerStrategy
+import kotlin.math.max
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
+import kotlin.system.measureTimeMicros
 
 internal class SchedulerImpl(
-    private val looperThreadStrategy: LooperThreadStrategy
+    private val workerStrategy: WorkerStrategy
 ) : Scheduler {
 
     private val disposables = CompositeDisposable()
 
     override fun newExecutor(): Scheduler.Executor =
-        ExecutorImpl(looperThreadStrategy)
+        ExecutorImpl(workerStrategy)
             .also(disposables::add)
 
     override fun destroy() {
         disposables.dispose()
-        looperThreadStrategy.destroy()
+        workerStrategy.destroy()
     }
 
     private class ExecutorImpl(
-        private val looperThreadStrategy: LooperThreadStrategy
+        private val workerStrategy: WorkerStrategy
     ) : Scheduler.Executor {
 
-        private val looperThread = looperThreadStrategy.get()
-        private val _isDisposed = AtomicInt(0)
-        override val isDisposed: Boolean get() = _isDisposed.value != 0
+        private val worker = workerStrategy.get()
+        private val tasks = CompositeDisposable()
+        override val isDisposed: Boolean get() = tasks.isDisposed
 
         override fun dispose() {
-            _isDisposed.value = 1
-            cancel()
-            looperThreadStrategy.recycle(looperThread)
+            tasks.dispose()
+            workerStrategy.recycle(worker)
         }
 
         override fun submit(delayMillis: Long, task: () -> Unit) {
             if (!isDisposed) {
-                looperThread.schedule(this, getStartTimeMillis(delayMillis), task)
+                submitTask(delayMillis * 1000L, task)
             }
         }
 
@@ -44,24 +46,44 @@ internal class SchedulerImpl(
             lateinit var t: () -> Unit
             t = {
                 if (!isDisposed) {
-                    val nextStartTimeMillis = getStartTimeMillis(periodMillis)
-                    task()
+                    val taskDurationMicros = measureTimeMicros(task)
                     if (!isDisposed) {
-                        looperThread.schedule(this, nextStartTimeMillis, t)
+                        submitTask(max(startDelayMillis * 1000L - taskDurationMicros, 0L), t)
                     }
                 }
             }
-            if (!isDisposed) {
-                looperThread.schedule(this, getStartTimeMillis(startDelayMillis), t)
-            }
+            submit(startDelayMillis, t)
         }
 
         override fun cancel() {
-            looperThread.cancel(this)
+            tasks.clear()
         }
 
-        private companion object {
-            private fun getStartTimeMillis(delayMillis: Long): Long = getTimeMillis() + delayMillis
+        /*
+         * There is no way to cancel a particular scheduled Worker task at the moment.
+         * The workaround is to decouple the original task with AtomicReference and
+         * clear it when cancelled.
+         */
+        private fun submitTask(startDelayMicros: Long, task: () -> Unit) {
+            val taskWrapper = TaskWrapper(AtomicReference(task.freeze()))
+            tasks += taskWrapper
+            worker.executeAfter(startDelayMicros, taskWrapper.freeze())
+        }
+
+        private class TaskWrapper(
+            private val delegate: AtomicReference<(() -> Unit)?>
+        ) : Disposable, () -> Unit {
+            override val isDisposed: Boolean get() = delegate.value == null
+
+            override fun dispose() {
+                delegate.value = null
+            }
+
+            override fun invoke() {
+                val task: (() -> Unit)? = delegate.value
+                delegate.value = null
+                task?.invoke()
+            }
         }
     }
 }
