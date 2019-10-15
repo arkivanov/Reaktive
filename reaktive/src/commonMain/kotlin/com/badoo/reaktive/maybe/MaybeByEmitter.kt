@@ -4,10 +4,7 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 
 fun <T> maybe(onSubscribe: (emitter: MaybeEmitter<T>) -> Unit): Maybe<T> =
-    maybeUnsafe { observer ->
-        val disposableWrapper = DisposableWrapper()
-        observer.onSubscribe(disposableWrapper)
-
+    maybeUnsafe(::DisposableWrapper) { observer, disposableWrapper ->
         val emitter =
             object : MaybeEmitter<T> {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed

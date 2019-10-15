@@ -5,10 +5,7 @@ import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.disposable.doIfNotDisposed
 
 fun <T> observable(onSubscribe: (emitter: ObservableEmitter<T>) -> Unit): Observable<T> =
-    observableUnsafe { observer ->
-        val disposableWrapper = DisposableWrapper()
-        observer.onSubscribe(disposableWrapper)
-
+    observableUnsafe(::DisposableWrapper) { observer, disposableWrapper ->
         val emitter =
             object : ObservableEmitter<T> {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed

@@ -4,10 +4,7 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 
 fun <T> single(onSubscribe: (emitter: SingleEmitter<T>) -> Unit): Single<T> =
-    singleUnsafe { observer ->
-        val disposableWrapper = DisposableWrapper()
-        observer.onSubscribe(disposableWrapper)
-
+    singleUnsafe(::DisposableWrapper) { observer, disposableWrapper ->
         val emitter =
             object : SingleEmitter<T> {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed
