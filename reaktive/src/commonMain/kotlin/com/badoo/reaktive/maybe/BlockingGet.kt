@@ -1,4 +1,4 @@
-package com.badoo.reaktive.single
+package com.badoo.reaktive.maybe
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.ObjectReference
@@ -7,14 +7,14 @@ import com.badoo.reaktive.utils.lock.Lock
 import com.badoo.reaktive.utils.lock.synchronized
 import com.badoo.reaktive.utils.lock.use
 
-fun <T> Single<T>.blockingGet(): T =
+fun <T> Maybe<T>.blockingGet(): T? =
     Lock().use { lock ->
         lock.newCondition().use { condition ->
             val result = ObjectReference<Any?>(null)
             val upstreamDisposable = AtomicReference<Disposable?>(null)
 
             subscribe(
-                object : SingleObserver<T> {
+                object : MaybeObserver<T> {
                     override fun onSubscribe(disposable: Disposable) {
                         upstreamDisposable.value = disposable
                     }
@@ -26,9 +26,16 @@ fun <T> Single<T>.blockingGet(): T =
                         }
                     }
 
+                    override fun onComplete() {
+                        lock.synchronized {
+                            result.value = BlockingGetResult.Completed
+                            condition.signal()
+                        }
+                    }
+
                     override fun onError(error: Throwable) {
                         lock.synchronized {
-                            result.value = BlockingGetError(error)
+                            result.value = BlockingGetResult.Error(error)
                             condition.signal()
                         }
                     }
@@ -49,14 +56,17 @@ fun <T> Single<T>.blockingGet(): T =
             result
                 .value
                 .let {
-                    if (it is BlockingGetError) {
-                        throw it.error
-                    }
-
                     @Suppress("UNCHECKED_CAST")
-                    it as T
+                    when (it) {
+                        is BlockingGetResult.Completed -> null
+                        is BlockingGetResult.Error -> throw it.error
+                        else -> it as T
+                    }
                 }
         }
     }
 
-private class BlockingGetError(val error: Throwable)
+private sealed class BlockingGetResult<out T> {
+    object Completed : BlockingGetResult<Nothing>()
+    class Error(val error: Throwable) : BlockingGetResult<Nothing>()
+}
