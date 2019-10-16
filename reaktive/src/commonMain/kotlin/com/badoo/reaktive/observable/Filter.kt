@@ -1,25 +1,25 @@
 package com.badoo.reaktive.observable
 
-import com.badoo.reaktive.base.subscribeSafe
-import com.badoo.reaktive.base.tryCatch
-import com.badoo.reaktive.completable.CompletableCallbacks
-import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.DisposableWrapper
 
 fun <T> Observable<T>.filter(predicate: (T) -> Boolean): Observable<T> =
-    observable { emitter ->
-        subscribeSafe(
-            object : ObservableObserver<T>, CompletableCallbacks by emitter {
-                override fun onSubscribe(disposable: Disposable) {
-                    emitter.setDisposable(disposable)
-                }
+    observableUnsafe { observer ->
+        val disposableWrapper = DisposableWrapper()
 
-                override fun onNext(value: T) {
-                    emitter.tryCatch({ predicate(value) }) {
-                        if (it) {
-                            emitter.onNext(value)
-                        }
+        subscribeSafe(
+            downstreamObserver = observer,
+            disposableContainer = disposableWrapper,
+            onNext = {
+                try {
+                    if (predicate(it) && !disposableWrapper.isDisposed) {
+                        observer.onNext(it)
+                    }
+                } catch (e: Throwable) {
+                    if (!disposableWrapper.isDisposed) {
+                        observer.onError(e)
                     }
                 }
-            }
+            },
+            onComplete = observer::onComplete
         )
     }

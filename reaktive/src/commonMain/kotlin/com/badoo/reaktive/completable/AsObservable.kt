@@ -1,17 +1,12 @@
 package com.badoo.reaktive.completable
 
-import com.badoo.reaktive.base.subscribeSafe
-import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.observable
+import com.badoo.reaktive.observable.observableUnsafe
 
 fun <T> Completable.asObservable(): Observable<T> =
-    observable { emitter ->
+    observableUnsafe { observer ->
         subscribeSafe(
-            object : CompletableObserver, CompletableCallbacks by emitter {
-                override fun onSubscribe(disposable: Disposable) {
-                    emitter.setDisposable(disposable)
-                }
-            }
+            downstreamObserver = observer,
+            onComplete = observer::onComplete
         )
     }

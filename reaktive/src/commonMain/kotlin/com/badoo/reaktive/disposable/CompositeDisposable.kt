@@ -4,7 +4,7 @@ package com.badoo.reaktive.disposable
  * Thread-safe collection of [Disposable]
  */
 
-expect class CompositeDisposable() : Disposable {
+expect class CompositeDisposable() : DisposableContainer {
 
     /**
      * Atomically either adds the specified [Disposable] or disposes it if container is already disposed.

@@ -2,7 +2,7 @@ package com.badoo.reaktive.disposable
 
 import kotlin.jvm.Volatile
 
-actual class CompositeDisposable actual constructor() : Disposable {
+actual class CompositeDisposable actual constructor() : DisposableContainer {
 
     private var list: MutableList<Disposable>? = null
     @Volatile
@@ -19,6 +19,10 @@ actual class CompositeDisposable actual constructor() : Disposable {
         }
 
         listToDispose?.forEach(Disposable::dispose)
+    }
+
+    override fun accept(disposable: Disposable) {
+        add(disposable)
     }
 
     actual fun add(disposable: Disposable) {

@@ -1,23 +1,21 @@
 package com.badoo.reaktive.maybe
 
-import com.badoo.reaktive.base.subscribeSafe
-import com.badoo.reaktive.completable.CompletableCallbacks
-import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.observable
+import com.badoo.reaktive.observable.observableUnsafe
 
 fun <T> Maybe<T>.asObservable(): Observable<T> =
-    observable { emitter ->
-        subscribeSafe(
-            object : MaybeObserver<T>, CompletableCallbacks by emitter {
-                override fun onSubscribe(disposable: Disposable) {
-                    emitter.setDisposable(disposable)
-                }
+    observableUnsafe { observer ->
+        val disposableWrapper = DisposableWrapper()
 
-                override fun onSuccess(value: T) {
-                    emitter.onNext(value)
-                    emitter.onComplete()
+        subscribeSafe(
+            downstreamObserver = observer,
+            onSuccess = {
+                observer.onNext(it)
+                if (!disposableWrapper.isDisposed) {
+                    observer.onComplete()
                 }
-            }
+            },
+            onComplete = observer::onComplete
         )
     }

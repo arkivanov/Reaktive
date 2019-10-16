@@ -4,7 +4,7 @@ import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.getAndSet
 import com.badoo.reaktive.utils.atomic.getAndUpdate
 
-actual class CompositeDisposable actual constructor() : Disposable {
+actual class CompositeDisposable actual constructor() : DisposableContainer {
 
     private val list = AtomicReference<List<Disposable>?>(emptyList())
     override val isDisposed: Boolean get() = list.value == null
@@ -13,6 +13,10 @@ actual class CompositeDisposable actual constructor() : Disposable {
         list
             .getAndSet(null)
             ?.forEach(Disposable::dispose)
+    }
+
+    override fun accept(disposable: Disposable) {
+        add(disposable)
     }
 
     /**

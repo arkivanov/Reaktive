@@ -2,7 +2,7 @@ package com.badoo.reaktive.disposable
 
 import kotlin.jvm.Volatile
 
-actual class DisposableWrapper actual constructor() : Disposable {
+actual class DisposableWrapper actual constructor() : DisposableContainer {
 
     @Volatile
     private var _isDisposed: Boolean = false
@@ -19,6 +19,10 @@ actual class DisposableWrapper actual constructor() : Disposable {
         }
 
         disposableToDispose?.dispose()
+    }
+
+    override fun accept(disposable: Disposable) {
+        set(disposable)
     }
 
     actual fun set(disposable: Disposable?) {
