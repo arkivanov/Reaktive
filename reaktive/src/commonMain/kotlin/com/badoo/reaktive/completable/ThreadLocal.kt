@@ -8,11 +8,9 @@ import com.badoo.reaktive.utils.ThreadLocalStorage
 import com.badoo.reaktive.utils.handleSourceError
 
 fun Completable.threadLocal(): Completable =
-    completable {
-        val disposables = CompositeDisposable()
-        it.setDisposable(disposables)
-        val emitterStorage = ThreadLocalStorage(it)
-        disposables += emitterStorage
+    completableSafe(::CompositeDisposable) { callbacks, disposables ->
+        val callbacksStorage = ThreadLocalStorage(callbacks)
+        disposables += callbacksStorage
 
         subscribeSafe(
             object : CompletableObserver {
@@ -21,16 +19,16 @@ fun Completable.threadLocal(): Completable =
                 }
 
                 override fun onComplete() {
-                    getEmitter()?.onComplete()
+                    getCallbacks()?.onComplete()
                 }
 
                 override fun onError(error: Throwable) {
-                    getEmitter(error)?.onError(error)
+                    getCallbacks(error)?.onError(error)
                 }
 
-                private fun getEmitter(existingError: Throwable? = null): CompletableEmitter? =
+                private fun getCallbacks(existingError: Throwable? = null): CompletableCallbacks? =
                     try {
-                        requireNotNull(emitterStorage.get())
+                        requireNotNull(callbacksStorage.get())
                     } catch (e: Throwable) {
                         handleSourceError(if (existingError == null) e else CompositeException(existingError, e))
                         null

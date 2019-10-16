@@ -7,9 +7,7 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.freeze
 
 fun Completable.observeOn(scheduler: Scheduler): Completable =
-    completable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    completableSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
         disposables += executor
 
@@ -21,7 +19,7 @@ fun Completable.observeOn(scheduler: Scheduler): Completable =
 
                 override fun onComplete() {
                     executor.submit {
-                        emitter.onComplete()
+                        callbacks.onComplete()
                     }
                 }
 
@@ -29,7 +27,7 @@ fun Completable.observeOn(scheduler: Scheduler): Completable =
                     error.freeze()
 
                     executor.submit {
-                        emitter.onError(error)
+                        callbacks.onError(error)
                     }
                 }
             }

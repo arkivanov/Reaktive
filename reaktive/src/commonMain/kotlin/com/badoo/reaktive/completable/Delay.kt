@@ -6,9 +6,7 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.scheduler.Scheduler
 
 fun Completable.delay(delayMillis: Long, scheduler: Scheduler, delayError: Boolean = false): Completable =
-    completable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    completableSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
         disposables += executor
 
@@ -19,18 +17,18 @@ fun Completable.delay(delayMillis: Long, scheduler: Scheduler, delayError: Boole
                 }
 
                 override fun onComplete() {
-                    executor.submit(delayMillis, emitter::onComplete)
+                    executor.submit(delayMillis, callbacks::onComplete)
                 }
 
                 override fun onError(error: Throwable) {
                     if (delayError) {
                         executor.submit(delayMillis) {
-                            emitter.onError(error)
+                            callbacks.onError(error)
                         }
                     } else {
                         executor.cancel()
                         executor.submit {
-                            emitter.onError(error)
+                            callbacks.onError(error)
                         }
                     }
                 }

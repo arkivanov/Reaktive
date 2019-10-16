@@ -9,28 +9,8 @@ fun completable(onSubscribe: (emitter: CompletableEmitter) -> Unit): Completable
         observer.onSubscribe(disposableWrapper)
 
         val emitter =
-            object : CompletableEmitter {
+            object : SafeCompletableCallbacks(observer, disposableWrapper), CompletableEmitter {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed
-
-                override fun onComplete() {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onComplete()
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
-
-                override fun onError(error: Throwable) {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onError(error)
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
 
                 override fun setDisposable(disposable: Disposable) {
                     disposableWrapper.set(disposable)
