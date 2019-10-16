@@ -7,24 +7,22 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.atomic.AtomicReference
 
 fun <T> Observable<T>.sample(windowMillis: Long, scheduler: Scheduler): Observable<T> =
-    observable { emitter ->
-        val disposableWrapper = CompositeDisposable()
-        emitter.setDisposable(disposableWrapper)
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
-        disposableWrapper += executor
+        disposables += executor
 
         subscribeSafe(
             object : ObservableObserver<T> {
                 private val lastValue = AtomicReference<SampleLastValue<T>?>(null)
 
                 override fun onSubscribe(disposable: Disposable) {
-                    disposableWrapper += disposable
+                    disposables += disposable
 
                     executor.submitRepeating(periodMillis = windowMillis) {
                         lastValue
                             .value
                             ?.value
-                            ?.also(emitter::onNext)
+                            ?.also(callbacks::onNext)
                     }
                 }
 
@@ -34,12 +32,12 @@ fun <T> Observable<T>.sample(windowMillis: Long, scheduler: Scheduler): Observab
 
                 override fun onComplete() {
                     executor.cancel()
-                    executor.submit(task = emitter::onComplete)
+                    executor.submit(task = callbacks::onComplete)
                 }
 
                 override fun onError(error: Throwable) {
                     executor.cancel()
-                    executor.submit { emitter.onError(error) }
+                    executor.submit { callbacks.onError(error) }
                 }
             }
         )

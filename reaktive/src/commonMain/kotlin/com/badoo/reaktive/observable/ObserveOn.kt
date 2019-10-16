@@ -8,15 +8,13 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.freeze
 
 fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
         disposables += executor
 
         subscribeSafe(
             object : ObservableObserver<T> {
-                private val bufferedExecutor = BufferedExecutor(executor, emitter::onNext)
+                private val bufferedExecutor = BufferedExecutor(executor, callbacks::onNext)
 
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
@@ -28,7 +26,7 @@ fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
 
                 override fun onComplete() {
                     executor.submit {
-                        emitter.onComplete()
+                        callbacks.onComplete()
                     }
                 }
 
@@ -36,7 +34,7 @@ fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
                     error.freeze()
 
                     executor.submit {
-                        emitter.onError(error)
+                        callbacks.onError(error)
                     }
                 }
             }

@@ -7,13 +7,11 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 
 fun <T> Observable<T>.takeUntil(other: Observable<*>): Observable<T> =
-    observable {
-        val emitter = it.serialize()
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
+        val serializedCallbacks = callbacks.serialize()
 
         val upstreamObserver =
-            object : ObservableObserver<T>, ObservableCallbacks<T> by emitter {
+            object : ObservableObserver<T>, ObservableCallbacks<T> by serializedCallbacks {
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
                 }

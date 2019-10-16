@@ -8,11 +8,9 @@ import com.badoo.reaktive.utils.ThreadLocalStorage
 import com.badoo.reaktive.utils.handleSourceError
 
 fun <T> Observable<T>.threadLocal(): Observable<T> =
-    observable {
-        val disposables = CompositeDisposable()
-        it.setDisposable(disposables)
-        val emitterStorage = ThreadLocalStorage(it)
-        disposables += emitterStorage
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
+        val callbacksStorage = ThreadLocalStorage(callbacks)
+        disposables += callbacksStorage
 
         subscribeSafe(
             object : ObservableObserver<T> {
@@ -21,20 +19,20 @@ fun <T> Observable<T>.threadLocal(): Observable<T> =
                 }
 
                 override fun onNext(value: T) {
-                    getEmitter()?.onNext(value)
+                    getCallbacks()?.onNext(value)
                 }
 
                 override fun onComplete() {
-                    getEmitter()?.onComplete()
+                    getCallbacks()?.onComplete()
                 }
 
                 override fun onError(error: Throwable) {
-                    getEmitter(error)?.onError(error)
+                    getCallbacks(error)?.onError(error)
                 }
 
-                private fun getEmitter(existingError: Throwable? = null): ObservableEmitter<T>? =
+                private fun getCallbacks(existingError: Throwable? = null): ObservableCallbacks<T>? =
                     try {
-                        requireNotNull(emitterStorage.get())
+                        requireNotNull(callbacksStorage.get())
                     } catch (e: Throwable) {
                         handleSourceError(if (existingError == null) e else CompositeException(existingError, e))
                         null

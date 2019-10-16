@@ -10,10 +10,7 @@ import com.badoo.reaktive.utils.replace
 import com.badoo.reaktive.utils.serializer.serializer
 
 fun <T, R> Collection<Observable<T>>.zip(mapper: (List<T>) -> R): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
-
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val values = SharedList<SharedList<T>>(size) { SharedList() }
         val completed = AtomicList(List(size) { false })
 
@@ -37,16 +34,16 @@ fun <T, R> Collection<Observable<T>>.zip(mapper: (List<T>) -> R): Observable<R> 
                             try {
                                 mapper(readyValues)
                             } catch (e: Throwable) {
-                                emitter.onError(e)
+                                callbacks.onError(e)
                                 return@serializer false
                             }
 
-                        emitter.onNext(result)
+                        callbacks.onNext(result)
 
                         // Complete if for any completed source there are no values left in the queue
                         values.forEachIndexed { index, queue ->
                             if (queue.isEmpty() && completed.value[index]) {
-                                emitter.onComplete()
+                                callbacks.onComplete()
                                 return@serializer false
                             }
                         }
@@ -62,14 +59,14 @@ fun <T, R> Collection<Observable<T>>.zip(mapper: (List<T>) -> R): Observable<R> 
                         // Complete if a source is completed and no values left in its queue
                         val isEmpty = values[event.index].isEmpty()
                         if (isEmpty) {
-                            emitter.onComplete()
+                            callbacks.onComplete()
                         }
 
                         !isEmpty
                     }
 
                     is ZipEvent.OnError -> {
-                        emitter.onError(event.error)
+                        callbacks.onError(event.error)
                         false
                     }
                 }

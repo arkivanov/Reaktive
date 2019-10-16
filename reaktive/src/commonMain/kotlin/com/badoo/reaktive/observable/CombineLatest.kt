@@ -9,9 +9,7 @@ import com.badoo.reaktive.utils.atomic.AtomicInt
 import com.badoo.reaktive.utils.serializer.serializer
 
 fun <T, R> Collection<Observable<T>>.combineLatest(mapper: (List<T>) -> R): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val values = SharedList<Any?>(size) { Uninitialized }
         val activeSourceCount = AtomicInt(size)
 
@@ -27,11 +25,11 @@ fun <T, R> Collection<Observable<T>>.combineLatest(mapper: (List<T>) -> R): Obse
                                     @Suppress("UNCHECKED_CAST")
                                     mapper(values as List<T>)
                                 } catch (e: Throwable) {
-                                    emitter.onError(e)
+                                    callbacks.onError(e)
                                     return@serializer false
                                 }
 
-                            emitter.onNext(mappedValue)
+                            callbacks.onNext(mappedValue)
                         }
 
                         true
@@ -43,14 +41,14 @@ fun <T, R> Collection<Observable<T>>.combineLatest(mapper: (List<T>) -> R): Obse
                         // Complete if all sources are completed or a source is completed without a value
                         val allCompleted = (remainingActiveSources == 0) || (values[event.index] === Uninitialized)
                         if (allCompleted) {
-                            emitter.onComplete()
+                            callbacks.onComplete()
                         }
 
                         !allCompleted
                     }
 
                     is CombineLatestEvent.OnError -> {
-                        emitter.onError(event.error)
+                        callbacks.onError(event.error)
                         false
                     }
                 }

@@ -4,25 +4,22 @@ import com.badoo.reaktive.base.ErrorCallback
 import com.badoo.reaktive.base.Observer
 import com.badoo.reaktive.base.ValueCallback
 import com.badoo.reaktive.base.subscribeSafe
-import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.atomic.AtomicInt
 
 fun <T, R> Observable<T>.flatMap(mapper: (T) -> Observable<R>): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
-        val serializedEmitter = emitter.serialize()
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
+        val serializedCallbacks = callbacks.serialize()
 
         subscribeSafe(
-            object : ObservableObserver<T>, ErrorCallback by serializedEmitter {
+            object : ObservableObserver<T>, ErrorCallback by serializedCallbacks {
                 private val activeSourceCount = AtomicInt(1)
 
-                private val mappedObserver =
+                private val mappedObserver: ObservableObserver<R> =
                     object : ObservableObserver<R>, Observer by this, CompletableCallbacks by this,
-                        ValueCallback<R> by serializedEmitter {
+                        ValueCallback<R> by serializedCallbacks {
                     }
 
                 override fun onSubscribe(disposable: Disposable) {
@@ -32,14 +29,16 @@ fun <T, R> Observable<T>.flatMap(mapper: (T) -> Observable<R>): Observable<R> =
                 override fun onNext(value: T) {
                     activeSourceCount.addAndGet(1)
 
-                    serializedEmitter.tryCatch({ mapper(value) }) {
-                        it.subscribeSafe(mappedObserver)
+                    try {
+                        mapper(value).subscribe(mappedObserver)
+                    } catch (e: Throwable) {
+                        serializedCallbacks.onError(e)
                     }
                 }
 
                 override fun onComplete() {
                     if (activeSourceCount.addAndGet(-1) <= 0) {
-                        serializedEmitter.onComplete()
+                        serializedCallbacks.onComplete()
                     }
                 }
             }

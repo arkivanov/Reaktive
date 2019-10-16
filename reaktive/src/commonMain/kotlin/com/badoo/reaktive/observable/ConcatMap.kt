@@ -11,17 +11,15 @@ import com.badoo.reaktive.utils.atomic.getAndUpdate
 import com.badoo.reaktive.utils.atomic.updateAndGet
 
 fun <T, R> Observable<T>.concatMap(mapper: (T) -> Observable<R>): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
-        val serializedEmitter = emitter.serialize()
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
+        val serializedCallbacks = callbacks.serialize()
 
         val state = AtomicReference(ConcatMapState<T>())
 
         subscribeSafe(
-            object : ObservableObserver<T>, ErrorCallback by serializedEmitter {
+            object : ObservableObserver<T>, ErrorCallback by serializedCallbacks {
                 val mappedObserver =
-                    object : ObservableObserver<R>, Observer by this, ObservableCallbacks<R> by serializedEmitter {
+                    object : ObservableObserver<R>, Observer by this, ObservableCallbacks<R> by serializedCallbacks {
                         override fun onComplete() {
                             val oldState =
                                 state.getAndUpdate {
@@ -34,7 +32,7 @@ fun <T, R> Observable<T>.concatMap(mapper: (T) -> Observable<R>): Observable<R> 
                             if (oldState.queue.isNotEmpty()) {
                                 mapAndSubscribe(oldState.queue[0])
                             } else if (oldState.isUpstreamCompleted) {
-                                serializedEmitter.onComplete()
+                                serializedCallbacks.onComplete()
                             }
                         }
                     }
@@ -65,12 +63,12 @@ fun <T, R> Observable<T>.concatMap(mapper: (T) -> Observable<R>): Observable<R> 
                         }
 
                     if (newState.isUpstreamCompleted && !newState.isMappedSourceActive) {
-                        serializedEmitter.onComplete()
+                        serializedCallbacks.onComplete()
                     }
                 }
 
                 private fun mapAndSubscribe(value: T) {
-                    serializedEmitter.tryCatch({ mapper(value) }) {
+                    serializedCallbacks.tryCatch({ mapper(value) }) {
                         it.subscribeSafe(mappedObserver)
                     }
                 }

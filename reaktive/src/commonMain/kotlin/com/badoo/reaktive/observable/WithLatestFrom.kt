@@ -15,14 +15,12 @@ fun <T, U, R> Observable<T>.withLatestFrom(
     others: Collection<Observable<U>>,
     mapper: (value: T, others: List<U>) -> R
 ): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val otherValues = atomicList<Any?>(List(others.size) { Uninitialized })
 
         others.forEachIndexed { index, source ->
             source.subscribeSafe(
-                object : ObservableObserver<U>, ErrorCallback by emitter {
+                object : ObservableObserver<U>, ErrorCallback by callbacks {
                     override fun onSubscribe(disposable: Disposable) {
                         disposables += disposable
                     }
@@ -41,7 +39,7 @@ fun <T, U, R> Observable<T>.withLatestFrom(
         }
 
         subscribeSafe(
-            object : ObservableObserver<T>, CompletableCallbacks by emitter {
+            object : ObservableObserver<T>, CompletableCallbacks by callbacks {
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
                 }
@@ -57,7 +55,7 @@ fun <T, U, R> Observable<T>.withLatestFrom(
                             }
                             ?: return
 
-                    emitter.tryCatch(block = { mapper(value, valueList) }, onSuccess = emitter::onNext)
+                    callbacks.tryCatch(block = { mapper(value, valueList) }, onSuccess = callbacks::onNext)
                 }
             }
         )

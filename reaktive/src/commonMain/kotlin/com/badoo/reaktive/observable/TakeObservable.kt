@@ -3,7 +3,6 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.base.subscribeSafe
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.utils.atomic.AtomicInt
 
 /**
@@ -13,14 +12,11 @@ fun <T> Observable<T>.take(limit: Int): Observable<T> {
     require(limit >= 0) { "count >= 0 required but it was $limit" }
 
     return observable { emitter ->
-        val disposableWrapper = DisposableWrapper()
-        emitter.setDisposable(disposableWrapper)
-
         val remaining = AtomicInt(limit)
 
         subscribeSafe(object : ObservableObserver<T>, CompletableCallbacks by emitter {
             override fun onSubscribe(disposable: Disposable) {
-                disposableWrapper.set(disposable)
+                emitter.setDisposable(disposable)
 
                 if (remaining.value == 0) {
                     onComplete()

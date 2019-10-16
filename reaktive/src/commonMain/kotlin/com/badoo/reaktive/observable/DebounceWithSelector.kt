@@ -12,17 +12,14 @@ import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.getAndUpdate
 
 fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable<T> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
-
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val innerDisposableWrapper = DisposableWrapper()
         disposables += innerDisposableWrapper
 
-        val serializedEmitter = emitter.serialize()
+        val serializedCallbacks = callbacks.serialize()
 
         subscribeSafe(
-            object : ObservableObserver<T>, ErrorCallback by serializedEmitter {
+            object : ObservableObserver<T>, ErrorCallback by serializedCallbacks {
                 private val pendingValue = AtomicReference<DebouncePendingValue<T>?>(null)
 
                 override fun onSubscribe(disposable: Disposable) {
@@ -30,7 +27,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
                 }
 
                 override fun onNext(value: T) {
-                    serializedEmitter.tryCatch(
+                    serializedCallbacks.tryCatch(
                         block = { debounceSelector(value) },
                         onSuccess = { completable -> onInnerDebouncer(value, completable) }
                     )
@@ -50,7 +47,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
                     innerDisposableWrapper.set(localDisposableWrapper)
 
                     val innerObserver =
-                        object : CompletableObserver, ErrorCallback by serializedEmitter {
+                        object : CompletableObserver, ErrorCallback by serializedCallbacks {
                             override fun onSubscribe(disposable: Disposable) {
                                 localDisposableWrapper.set(disposable)
                             }
@@ -58,7 +55,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
                             override fun onComplete() {
                                 pendingValue.getAndUpdate { if (it === newPendingValue) null else it }
                                     ?.takeIf { it === newPendingValue }
-                                    ?.let { serializedEmitter.onNext(it.value) }
+                                    ?.let { serializedCallbacks.onNext(it.value) }
                             }
                         }
 
@@ -67,8 +64,8 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
 
                 override fun onComplete() {
                     pendingValue.getAndUpdate { null }
-                        ?.let { serializedEmitter.onNext(it.value) }
-                    serializedEmitter.onComplete()
+                        ?.let { serializedCallbacks.onNext(it.value) }
+                    serializedCallbacks.onComplete()
                 }
 
             }

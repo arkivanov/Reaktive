@@ -12,15 +12,12 @@ import com.badoo.reaktive.utils.atomic.update
 import com.badoo.reaktive.utils.atomic.updateAndGet
 
 fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> =
-    observable { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
-
+    observableSafe(::CompositeDisposable) { callbacks, disposables ->
         val innerDisposableWrapper = DisposableWrapper()
         disposables += innerDisposableWrapper
 
         val state = AtomicReference(SwitchMapState())
-        val serializedEmitter = emitter.serialize()
+        val serializedEmitter = callbacks.serialize()
 
         subscribeSafe(
             object : ObservableObserver<T>, ErrorCallback by serializedEmitter {
