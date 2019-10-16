@@ -8,11 +8,9 @@ import com.badoo.reaktive.utils.ThreadLocalStorage
 import com.badoo.reaktive.utils.handleSourceError
 
 fun <T> Maybe<T>.threadLocal(): Maybe<T> =
-    maybe {
-        val disposables = CompositeDisposable()
-        it.setDisposable(disposables)
-        val emitterStorage = ThreadLocalStorage(it)
-        disposables += emitterStorage
+    maybeSafe(::CompositeDisposable) { callbacks, disposables ->
+        val callbacksStorage = ThreadLocalStorage(callbacks)
+        disposables += callbacksStorage
 
         subscribeSafe(
             object : MaybeObserver<T> {
@@ -21,20 +19,20 @@ fun <T> Maybe<T>.threadLocal(): Maybe<T> =
                 }
 
                 override fun onSuccess(value: T) {
-                    getEmitter()?.onSuccess(value)
+                    getCallbacks()?.onSuccess(value)
                 }
 
                 override fun onComplete() {
-                    getEmitter()?.onComplete()
+                    getCallbacks()?.onComplete()
                 }
 
                 override fun onError(error: Throwable) {
-                    getEmitter(error)?.onError(error)
+                    getCallbacks(error)?.onError(error)
                 }
 
-                private fun getEmitter(existingError: Throwable? = null): MaybeEmitter<T>? =
+                private fun getCallbacks(existingError: Throwable? = null): MaybeCallbacks<T>? =
                     try {
-                        requireNotNull(emitterStorage.get())
+                        requireNotNull(callbacksStorage.get())
                     } catch (e: Throwable) {
                         handleSourceError(if (existingError == null) e else CompositeException(existingError, e))
                         null

@@ -9,38 +9,8 @@ fun <T> maybe(onSubscribe: (emitter: MaybeEmitter<T>) -> Unit): Maybe<T> =
         observer.onSubscribe(disposableWrapper)
 
         val emitter =
-            object : MaybeEmitter<T> {
+            object : SafeMaybeCallbacks<T>(observer, disposableWrapper), MaybeEmitter<T> {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed
-
-                override fun onSuccess(value: T) {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onSuccess(value)
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
-
-                override fun onComplete() {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onComplete()
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
-
-                override fun onError(error: Throwable) {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onError(error)
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
 
                 override fun setDisposable(disposable: Disposable) {
                     disposableWrapper.set(disposable)

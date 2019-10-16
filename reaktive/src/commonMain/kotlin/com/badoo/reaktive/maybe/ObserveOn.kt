@@ -7,9 +7,7 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.freeze
 
 fun <T> Maybe<T>.observeOn(scheduler: Scheduler): Maybe<T> =
-    maybe { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    maybeSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
         disposables += executor
 
@@ -21,13 +19,13 @@ fun <T> Maybe<T>.observeOn(scheduler: Scheduler): Maybe<T> =
 
                 override fun onSuccess(value: T) {
                     executor.submit {
-                        emitter.onSuccess(value)
+                        callbacks.onSuccess(value)
                     }
                 }
 
                 override fun onComplete() {
                     executor.submit {
-                        emitter.onComplete()
+                        callbacks.onComplete()
                     }
                 }
 
@@ -35,7 +33,7 @@ fun <T> Maybe<T>.observeOn(scheduler: Scheduler): Maybe<T> =
                     error.freeze()
 
                     executor.submit {
-                        emitter.onError(error)
+                        callbacks.onError(error)
                     }
                 }
             }
