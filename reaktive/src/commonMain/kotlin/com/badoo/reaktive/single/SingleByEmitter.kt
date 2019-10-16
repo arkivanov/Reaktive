@@ -9,28 +9,8 @@ fun <T> single(onSubscribe: (emitter: SingleEmitter<T>) -> Unit): Single<T> =
         observer.onSubscribe(disposableWrapper)
 
         val emitter =
-            object : SingleEmitter<T> {
+            object : SafeSingleCallbacks<T>(observer, disposableWrapper), SingleEmitter<T> {
                 override val isDisposed: Boolean get() = disposableWrapper.isDisposed
-
-                override fun onSuccess(value: T) {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onSuccess(value)
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
-
-                override fun onError(error: Throwable) {
-                    if (!disposableWrapper.isDisposed) {
-                        try {
-                            observer.onError(error)
-                        } finally {
-                            disposableWrapper.dispose()
-                        }
-                    }
-                }
 
                 override fun setDisposable(disposable: Disposable) {
                     disposableWrapper.set(disposable)

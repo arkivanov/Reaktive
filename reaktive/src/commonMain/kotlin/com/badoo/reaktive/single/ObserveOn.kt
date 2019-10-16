@@ -7,9 +7,7 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.freeze
 
 fun <T> Single<T>.observeOn(scheduler: Scheduler): Single<T> =
-    single { emitter ->
-        val disposables = CompositeDisposable()
-        emitter.setDisposable(disposables)
+    singleSafe(::CompositeDisposable) { callbacks, disposables ->
         val executor = scheduler.newExecutor()
         disposables += executor
 
@@ -21,7 +19,7 @@ fun <T> Single<T>.observeOn(scheduler: Scheduler): Single<T> =
 
                 override fun onSuccess(value: T) {
                     executor.submit {
-                        emitter.onSuccess(value)
+                        callbacks.onSuccess(value)
                     }
                 }
 
@@ -29,7 +27,7 @@ fun <T> Single<T>.observeOn(scheduler: Scheduler): Single<T> =
                     error.freeze()
 
                     executor.submit {
-                        emitter.onError(error)
+                        callbacks.onError(error)
                     }
                 }
             }
