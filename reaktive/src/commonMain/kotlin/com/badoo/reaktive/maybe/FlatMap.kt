@@ -1,26 +1,28 @@
 package com.badoo.reaktive.maybe
 
-import com.badoo.reaktive.base.Observer
-import com.badoo.reaktive.base.subscribeSafe
-import com.badoo.reaktive.base.tryCatch
-import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.DisposableWrapper
 
 fun <T, R> Maybe<T>.flatMap(mapper: (T) -> Maybe<R>): Maybe<R> =
-    maybe { emitter ->
-        subscribeSafe(
-            object : MaybeObserver<T>, CompletableCallbacks by emitter {
-                override fun onSubscribe(disposable: Disposable) {
-                    emitter.setDisposable(disposable)
-                }
+    maybeUnsafe { observer ->
+        val disposableWrapper = DisposableWrapper()
 
-                override fun onSuccess(value: T) {
-                    emitter.tryCatch({ mapper(value) }) {
-                        it.subscribeSafe(
-                            object : MaybeObserver<R>, Observer by this, MaybeCallbacks<R> by emitter {
-                            }
-                        )
-                    }
+        val innerObserver =
+            object : SafeMaybeCallbacks<R>(observer, disposableWrapper), MaybeObserver<R> {
+                override fun onSubscribe(disposable: Disposable) {
+                    disposableWrapper.set(disposable)
+                }
+            }
+
+        subscribeSafe(
+            downstreamObserver = observer,
+            disposableContainer = disposableWrapper,
+            onSuccess = { value ->
+                try {
+                    mapper(value).subscribe(innerObserver)
+                } catch (e: Throwable) {
+                    observer.onError(e)
+                    disposableWrapper.dispose()
                 }
             }
         )
