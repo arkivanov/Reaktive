@@ -38,9 +38,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api project(':reaktive')
-                implementation project(':reaktive-annotations')
-                implementation project(':utils')
+                api "com.badoo.reaktive:reaktive:$reaktive_version"
+                implementation "com.badoo.reaktive:reaktive-annotations:$reaktive_version"
+                implementation "com.badoo.reaktive:utils:$reaktive_version"
             }
         }
     }
