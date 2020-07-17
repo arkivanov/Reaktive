@@ -6,13 +6,16 @@ import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.atomic.AtomicLong
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.getAndUpdate
+import com.badoo.reaktive.utils.atomic.getValue
+import com.badoo.reaktive.utils.atomic.setValue
 import com.badoo.reaktive.utils.atomic.update
 import com.badoo.reaktive.utils.freeze
 
 class TestScheduler(
-    private val isManualProcessing: Boolean = false
+    isManualProcessing: Boolean = false
 ) : Scheduler {
 
+    var isManualProcessing: Boolean by AtomicBoolean(isManualProcessing)
     private val _timer = TimerImpl()
     val timer: Timer = _timer
     private val _executors = AtomicReference<List<Executor>>(emptyList())
