@@ -7,13 +7,17 @@ import com.badoo.reaktive.scheduler.BufferedExecutor
 import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.freeze
 
-fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
+fun <T> Observable<T>.observeOn(
+    scheduler: Scheduler,
+    bufferSize: Int = Int.MAX_VALUE,
+    bufferOverflowStrategy: BufferOverflowStrategy = BufferOverflowStrategy.ERROR
+): Observable<T> =
     observable { emitter ->
         val disposables = CompositeDisposable()
         emitter.setDisposable(disposables)
         val executor = scheduler.newExecutor()
         disposables += executor
-        val bufferedExecutor = BufferedExecutor(executor, emitter::onNext)
+        val bufferedExecutor = BufferedExecutor(executor, bufferSize, bufferOverflowStrategy, emitter::onNext)
         disposables += bufferedExecutor
 
         subscribe(
@@ -23,7 +27,11 @@ fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
                 }
 
                 override fun onNext(value: T) {
-                    bufferedExecutor.submit(value)
+                    try {
+                        bufferedExecutor.submit(value)
+                    } catch (e: Throwable) {
+                        emitter.onError(e)
+                    }
                 }
 
                 override fun onComplete() {
@@ -42,3 +50,13 @@ fun <T> Observable<T>.observeOn(scheduler: Scheduler): Observable<T> =
             }
         )
     }
+
+enum class BufferOverflowStrategy {
+
+    ERROR,
+    DROP_OLDEST,
+    DROP_NEWEST,
+    BLOCK
+}
+
+class BufferOverflowException : Exception()
