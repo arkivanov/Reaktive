@@ -13,6 +13,7 @@ class MppConfigurationPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         target.extensions.create("configuration", MppConfigurationExtension::class.java, target)
+        setupAndroidLibraryPlugin(target)
         setupMultiplatformLibrary(target)
         setupAllTargetsWithDefaultSourceSets(target)
     }
@@ -125,9 +126,19 @@ class MppConfigurationPlugin : Plugin<Project> {
         }
     }
 
+    // Workaround https://youtrack.jetbrains.com/issue/KT-34038
+    private fun setupAndroidLibraryPlugin(project: Project) {
+        if (Target.shouldDefineTarget(project, Target.JVM)) {
+            project.pluginManager.apply("com.android.library")
+        }
+    }
+
     private fun setupAndroidTarget(project: Project) {
         if (!Target.shouldDefineTarget(project, Target.JVM)) return
-        project.pluginManager.apply("com.android.library")
+
+        // Workaround https://youtrack.jetbrains.com/issue/KT-34038
+        // project.pluginManager.apply("com.android.library")
+
         project.extensions.configure(BaseExtension::class.java) {
             buildToolsVersion("29.0.2")
             compileSdkVersion(29)
