@@ -1,5 +1,6 @@
 package com.badoo.reaktive.observable
 
+import com.badoo.reaktive.synchronized
 import com.badoo.reaktive.utils.Uninitialized
 import com.badoo.reaktive.utils.queue.ArrayQueue
 import com.badoo.reaktive.utils.queue.Queue
@@ -16,7 +17,7 @@ internal actual open class SerializedObservableCallbacks<in T> actual constructo
     private var isEmpty = true
 
     override fun onNext(value: T) {
-        synchronized(this) {
+        synchronized {
             if (isFinished) {
                 return
             }
@@ -36,7 +37,7 @@ internal actual open class SerializedObservableCallbacks<in T> actual constructo
     }
 
     override fun onComplete() {
-        synchronized(this) {
+        synchronized {
             if (isFinished) {
                 return
             }
@@ -54,7 +55,7 @@ internal actual open class SerializedObservableCallbacks<in T> actual constructo
     }
 
     override fun onError(error: Throwable) {
-        synchronized(this) {
+        synchronized {
             if (isFinished) {
                 return
             }
@@ -75,7 +76,7 @@ internal actual open class SerializedObservableCallbacks<in T> actual constructo
         while (true) {
             var sendItem: Any? = Uninitialized
 
-            synchronized(this) {
+            synchronized {
                 when {
                     isEmpty -> {
                         isDraining = false

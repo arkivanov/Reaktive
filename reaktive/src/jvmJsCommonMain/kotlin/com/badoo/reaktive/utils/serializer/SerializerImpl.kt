@@ -1,5 +1,6 @@
 package com.badoo.reaktive.utils.serializer
 
+import com.badoo.reaktive.synchronized
 import com.badoo.reaktive.utils.queue.Queue
 
 internal abstract class SerializerImpl<in T>(queue: Queue<T>) : Serializer<T> {
@@ -10,7 +11,7 @@ internal abstract class SerializerImpl<in T>(queue: Queue<T>) : Serializer<T> {
 
     override fun accept(value: T) {
         val queueToDrain =
-            synchronized(monitor) {
+            monitor.synchronized {
                 val queue = queue ?: return
 
                 if (isDraining) {
@@ -30,7 +31,7 @@ internal abstract class SerializerImpl<in T>(queue: Queue<T>) : Serializer<T> {
     }
 
     override fun clear() {
-        synchronized(monitor) {
+        monitor.synchronized {
             queue?.clear()
         }
     }
@@ -38,7 +39,7 @@ internal abstract class SerializerImpl<in T>(queue: Queue<T>) : Serializer<T> {
     private fun Queue<T>.drain() {
         while (true) {
             val value =
-                synchronized(monitor) {
+                monitor.synchronized {
                     if (isEmpty) {
                         onDrainFinished(false)
                         return
@@ -56,7 +57,7 @@ internal abstract class SerializerImpl<in T>(queue: Queue<T>) : Serializer<T> {
 
     private fun processValue(value: T): Boolean {
         if (!onValue(value)) {
-            synchronized(monitor) {
+            monitor.synchronized {
                 onDrainFinished(true)
             }
             return false

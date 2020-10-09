@@ -13,8 +13,16 @@ class MppConfigurationPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         target.extensions.create("configuration", MppConfigurationExtension::class.java, target)
+        applyAndroidPluginIfNeeded(target)
         setupMultiplatformLibrary(target)
         setupAllTargetsWithDefaultSourceSets(target)
+    }
+
+    // Workaround: android plugin should applied before multiplatform
+    private fun applyAndroidPluginIfNeeded(project: Project) {
+        if (Target.shouldDefineTarget(project, Target.JVM)) {
+            project.pluginManager.apply("com.android.library")
+        }
     }
 
     private fun setupMultiplatformLibrary(target: Project) {
@@ -127,7 +135,6 @@ class MppConfigurationPlugin : Plugin<Project> {
 
     private fun setupAndroidTarget(project: Project) {
         if (!Target.shouldDefineTarget(project, Target.JVM)) return
-        project.pluginManager.apply("com.android.library")
         project.extensions.configure(BaseExtension::class.java) {
             buildToolsVersion("29.0.2")
             compileSdkVersion(29)

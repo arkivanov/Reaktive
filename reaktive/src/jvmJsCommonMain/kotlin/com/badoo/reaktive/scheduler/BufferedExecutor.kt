@@ -1,6 +1,7 @@
 package com.badoo.reaktive.scheduler
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.synchronized
 import com.badoo.reaktive.utils.queue.ArrayQueue
 import com.badoo.reaktive.utils.queue.Queue
 
@@ -22,7 +23,7 @@ internal actual class BufferedExecutor<in T> actual constructor(
     }
 
     actual fun submit(value: T) {
-        synchronized(monitor) {
+        monitor.synchronized {
             queue.offer(value)
             if (!isDraining) {
                 isDraining = true
@@ -33,7 +34,7 @@ internal actual class BufferedExecutor<in T> actual constructor(
 
     private fun drain() {
         while (!executor.isDisposed) {
-            synchronized(monitor) {
+            monitor.synchronized {
                 if (queue.isEmpty) {
                     isDraining = false
                     return
