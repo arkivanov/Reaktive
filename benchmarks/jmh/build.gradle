@@ -16,10 +16,12 @@ dependencies {
 
 jmh {
     benchmarkMode = ['avgt']
+    exclude = ['RxJava']
     timeUnit = 'ms'
     fork = 1
     warmup = '2s'
     warmupIterations = 8
     timeOnIteration = '2s'
     iterations = 10
+    humanOutputFile = new File("/home/aivanov/jmh.txt")
 }
