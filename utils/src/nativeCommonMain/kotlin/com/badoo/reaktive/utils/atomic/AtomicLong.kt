@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-actual class AtomicLong actual constructor(initialValue: Long) {
+internal actual class AtomicLong actual constructor(initialValue: Long) {
 
     private val delegate = kotlin.native.concurrent.AtomicLong(initialValue)
 

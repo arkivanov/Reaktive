@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-expect class AtomicInt(initialValue: Int = 0) {
+internal expect class AtomicInt(initialValue: Int = 0) {
 
     var value: Int
 

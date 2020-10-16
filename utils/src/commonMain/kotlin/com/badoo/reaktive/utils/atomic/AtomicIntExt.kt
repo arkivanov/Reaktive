@@ -2,7 +2,7 @@ package com.badoo.reaktive.utils.atomic
 
 import kotlin.reflect.KProperty
 
-inline fun AtomicInt.updateAndGet(update: (Int) -> Int): Int {
+internal inline fun AtomicInt.updateAndGet(update: (Int) -> Int): Int {
     var next: Int
     do {
         val prev = value
@@ -12,8 +12,8 @@ inline fun AtomicInt.updateAndGet(update: (Int) -> Int): Int {
     return next
 }
 
-operator fun AtomicInt.getValue(thisRef: Any?, property: KProperty<*>): Int = value
+internal operator fun AtomicInt.getValue(thisRef: Any?, property: KProperty<*>): Int = value
 
-operator fun AtomicInt.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+internal operator fun AtomicInt.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
     this.value = value
 }

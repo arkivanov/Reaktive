@@ -4,7 +4,7 @@ import kotlin.native.concurrent.FreezableAtomicReference
 import kotlin.native.concurrent.freeze
 import kotlin.native.concurrent.isFrozen
 
-actual class AtomicReference<T> actual constructor(initialValue: T) {
+internal actual class AtomicReference<T> actual constructor(initialValue: T) {
 
     private val delegate = FreezableAtomicReference(initialValue)
 

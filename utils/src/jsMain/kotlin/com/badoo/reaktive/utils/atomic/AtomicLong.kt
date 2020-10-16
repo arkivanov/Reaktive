@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-actual class AtomicLong actual constructor(initialValue: Long) {
+internal actual class AtomicLong actual constructor(initialValue: Long) {
 
     actual var value: Long = initialValue
 
