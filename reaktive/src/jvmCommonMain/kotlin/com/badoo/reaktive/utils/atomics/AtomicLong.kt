@@ -10,6 +10,6 @@ internal actual var AtomicLong.value: Long
     }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-internal actual fun AtomicLong.compareAndSet(expectedValue: Long, newValue: Long): Boolean = compareAndSet(expectedValue, newValue)
+internal actual inline fun AtomicLong.compareAndSet(expectedValue: Long, newValue: Long): Boolean = compareAndSet(expectedValue, newValue)
 
-internal actual fun atomic(value: Long): AtomicLong = AtomicLong(value)
+internal actual inline fun atomic(value: Long): AtomicLong = AtomicLong(value)

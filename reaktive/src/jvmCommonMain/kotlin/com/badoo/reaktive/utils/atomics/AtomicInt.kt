@@ -10,6 +10,6 @@ internal actual var AtomicInt.value: Int
     }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // The signature of the original method is same
-internal actual fun AtomicInt.compareAndSet(expectedValue: Int, newValue: Int): Boolean = compareAndSet(expectedValue, newValue)
+internal actual inline fun AtomicInt.compareAndSet(expectedValue: Int, newValue: Int): Boolean = compareAndSet(expectedValue, newValue)
 
-internal actual fun atomic(value: Int): AtomicInt = AtomicInt(value)
+internal actual inline fun atomic(value: Int): AtomicInt = AtomicInt(value)

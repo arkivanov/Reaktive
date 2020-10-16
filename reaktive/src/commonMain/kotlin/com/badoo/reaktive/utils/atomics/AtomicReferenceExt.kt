@@ -8,7 +8,7 @@ internal var <T> AtomicReference<T>.value: T
         setValue(value)
     }
 
-internal fun <T> AtomicReference<T>.getAndSet(value: T): T = getAndChange { value }
+internal inline fun <T> AtomicReference<T>.getAndSet(value: T): T = getAndChange { value }
 
 internal inline fun <T> AtomicReference<T>.getAndChange(update: (T) -> T): T {
     var prev: T

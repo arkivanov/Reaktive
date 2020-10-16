@@ -10,6 +10,6 @@ internal actual var AtomicBoolean.value: Boolean
     }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-internal actual fun AtomicBoolean.compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean = compareAndSet(expectedValue, newValue)
+internal actual inline fun AtomicBoolean.compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean = compareAndSet(expectedValue, newValue)
 
-internal actual fun atomic(value: Boolean): AtomicBoolean = AtomicBoolean(value)
+internal actual inline fun atomic(value: Boolean): AtomicBoolean = AtomicBoolean(value)

@@ -6,6 +6,8 @@ import com.badoo.reaktive.disposable.minusAssign
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.utils.ObjectReference
 import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.compareAndSet
 
 fun <T> Iterable<Observable<T>>.amb(): Observable<T> =
     observable { emitter ->
@@ -18,7 +20,7 @@ fun <T> Iterable<Observable<T>>.amb(): Observable<T> =
 
         val disposables = CompositeDisposable()
         emitter.setDisposable(disposables)
-        val hasWinner = AtomicBoolean()
+        val hasWinner = atomic(false)
 
         sources.forEach {
             it.subscribe(AmbObserver(disposables, hasWinner, emitter))

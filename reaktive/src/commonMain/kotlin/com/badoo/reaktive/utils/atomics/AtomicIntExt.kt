@@ -2,7 +2,7 @@ package com.badoo.reaktive.utils.atomics
 
 import kotlin.reflect.KProperty
 
-internal fun AtomicInt.addAndGet(value: Int): Int = changeAndGet { it + value }
+internal inline fun AtomicInt.addAndGet(value: Int): Int = changeAndGet { it + value }
 
 internal inline fun AtomicInt.changeAndGet(update: (Int) -> Int): Int {
     var next: Int
