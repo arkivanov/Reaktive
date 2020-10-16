@@ -1,7 +1,7 @@
 package com.badoo.reaktive.single
 
 import com.badoo.reaktive.base.CompositeDisposableObserver
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
 
 fun <T> Iterable<Single<T>>.amb(): Single<T> =
     com.badoo.reaktive.single.single { emitter ->

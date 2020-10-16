@@ -1,6 +1,6 @@
 package com.badoo.reaktive.test
 
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.lock.Condition
 import com.badoo.reaktive.utils.lock.waitFor
 import com.badoo.reaktive.utils.reaktiveUncaughtErrorHandler
@@ -13,7 +13,7 @@ internal fun Condition.waitForOrFail(timeoutNanos: Long = 5_000_000_000L, predic
 }
 
 internal fun mockUncaughtExceptionHandler(): AtomicReference<Throwable?> {
-    val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+    val caughtException: AtomicReference<Throwable?> = atomic(null)
     reaktiveUncaughtErrorHandler = { caughtException.value = it }
 
     return caughtException

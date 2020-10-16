@@ -4,16 +4,17 @@ import com.badoo.reaktive.observable.ObservableObserver
 import com.badoo.reaktive.subject.DefaultSubject
 import com.badoo.reaktive.subject.Subject
 import com.badoo.reaktive.subject.isActive
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndSet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.compareAndSet
+import com.badoo.reaktive.utils.atomics.getAndSet
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.queue.SharedQueue
 
 @Suppress("FunctionName")
 fun <T> UnicastSubject(bufferSize: Int = Int.MAX_VALUE, onTerminate: () -> Unit = {}): UnicastSubject<T> =
     object : DefaultSubject<T>(), UnicastSubject<T> {
-        private val hasSubscribers = AtomicBoolean()
-        private val queue = AtomicReference<SharedQueue<T>?>(SharedQueue())
+        private val hasSubscribers = atomic(false)
+        private val queue = atomic<SharedQueue<T>?>(SharedQueue())
 
         override fun onSubscribed(observer: ObservableObserver<T>): Boolean {
             val isFirstObserver = hasSubscribers.compareAndSet(false, true)

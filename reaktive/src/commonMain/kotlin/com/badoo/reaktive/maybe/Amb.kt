@@ -1,7 +1,7 @@
 package com.badoo.reaktive.maybe
 
 import com.badoo.reaktive.base.CompositeDisposableObserver
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
 
 fun <T> Iterable<Maybe<T>>.amb(): Maybe<T> =
     maybe { emitter ->

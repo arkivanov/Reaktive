@@ -6,8 +6,8 @@ import com.badoo.reaktive.test.base.hasSubscribers
 import com.badoo.reaktive.test.completable.TestCompletable
 import com.badoo.reaktive.test.completable.assertComplete
 import com.badoo.reaktive.test.completable.test
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -79,7 +79,7 @@ class RetryTest : CompletableToCompletableTests by CompletableToCompletableTests
 
     @Test
     fun predicate_receives_valid_counter_WHEN_upstream_produces_error() {
-        val timeRef = AtomicInt()
+        val timeRef = atomic()
         upstream
             .retry { time, _ ->
                 timeRef.value = time

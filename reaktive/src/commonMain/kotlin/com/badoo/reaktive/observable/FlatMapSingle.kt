@@ -7,7 +7,8 @@ import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.single.Single
 import com.badoo.reaktive.single.SingleObserver
 import com.badoo.reaktive.single.map
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T, R> Observable<T>.flatMapSingle(mapper: (T) -> Single<R>): Observable<R> =
     observable { emitter ->
@@ -15,7 +16,7 @@ fun <T, R> Observable<T>.flatMapSingle(mapper: (T) -> Single<R>): Observable<R> 
 
         val upstreamObserver =
             object : CompositeDisposableObserver(), ObservableObserver<T>, ErrorCallback by serializedEmitter {
-                private val activeSourceCount = AtomicInt(1)
+                private val activeSourceCount = atomic(1)
 
                 private val mappedObserver: SingleObserver<R> =
                     object : SingleObserver<R>, Observer by this, ErrorCallback by serializedEmitter {

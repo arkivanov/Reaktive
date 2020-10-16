@@ -4,9 +4,10 @@ import com.badoo.reaktive.base.setCancellable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.subject.unicast.UnicastSubject
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.queue.SharedQueue
 
 /**
@@ -21,7 +22,7 @@ fun <T> Observable<T>.window(
     require(skip > 0) { "skip > 0 required but it was $skip" }
 
     return observable { emitter ->
-        val activeWindowsCount = AtomicInt(1)
+        val activeWindowsCount = atomic(1)
         val upstreamObserver = UpstreamObserver(
             count = count,
             skip = skip,
@@ -46,8 +47,8 @@ private class UpstreamObserver<T>(
     private val downstream: ObservableCallbacks<Observable<T>>
 ) : DisposableWrapper(), ObservableObserver<T> {
     private val windows = SharedQueue<UnicastSubject<T>>()
-    private val skippedCount = AtomicLong()
-    private val tailWindowValuesCount = AtomicLong()
+    private val skippedCount = atomic(0L)
+    private val tailWindowValuesCount = atomic(0L)
     private val onWindowTerminate: () -> Unit = {
         if (activeWindowsCount.addAndGet(-1) == 0) {
             dispose()
@@ -103,7 +104,7 @@ private class UpstreamObserver<T>(
     private class WindowWrapper<T>(
         val window: UnicastSubject<T>
     ) : Observable<T> {
-        val isSubscribed = AtomicBoolean()
+        val isSubscribed = atomic(false)
 
         override fun subscribe(observer: ObservableObserver<T>) {
             isSubscribed.value = true

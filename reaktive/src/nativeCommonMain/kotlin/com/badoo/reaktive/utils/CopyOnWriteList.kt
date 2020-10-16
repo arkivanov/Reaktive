@@ -1,15 +1,15 @@
 package com.badoo.reaktive.utils
 
-import com.badoo.reaktive.utils.atomic.AtomicList
-import com.badoo.reaktive.utils.atomic.add
-import com.badoo.reaktive.utils.atomic.clear
-import com.badoo.reaktive.utils.atomic.get
-import com.badoo.reaktive.utils.atomic.isEmpty
-import com.badoo.reaktive.utils.atomic.plusAssign
-import com.badoo.reaktive.utils.atomic.remove
-import com.badoo.reaktive.utils.atomic.removeAt
-import com.badoo.reaktive.utils.atomic.set
-import com.badoo.reaktive.utils.atomic.size
+import com.badoo.reaktive.utils.atomics.AtomicList
+import com.badoo.reaktive.utils.atomics.add
+import com.badoo.reaktive.utils.atomics.clear
+import com.badoo.reaktive.utils.atomics.get
+import com.badoo.reaktive.utils.atomics.isEmpty
+import com.badoo.reaktive.utils.atomics.plusAssign
+import com.badoo.reaktive.utils.atomics.remove
+import com.badoo.reaktive.utils.atomics.removeAt
+import com.badoo.reaktive.utils.atomics.set
+import com.badoo.reaktive.utils.atomics.size
 
 internal class CopyOnWriteList<T>(initialList: List<T> = emptyList()) : MutableList<T> {
 

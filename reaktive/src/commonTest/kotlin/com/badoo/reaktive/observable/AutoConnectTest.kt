@@ -7,8 +7,8 @@ import com.badoo.reaktive.test.observable.assertComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.utils.SharedList
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -145,7 +145,7 @@ class AutoConnectTest {
 
     @Test
     fun subscribes_to_upstream_for_each_subscription_from_downstream() {
-        val subscribeCount = AtomicInt()
+        val subscribeCount = atomic()
         val upstream = testUpstream(subscribe = { subscribeCount.addAndGet(1) })
         val autoConnect = upstream.autoConnect()
 

@@ -5,7 +5,7 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.ObservableEmitter
 import com.badoo.reaktive.observable.ObservableObserver
 import com.badoo.reaktive.observable.observable
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 
 class TestObservableRelay<T> : Observable<T>, ObservableEmitter<T> {
 

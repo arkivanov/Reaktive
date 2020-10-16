@@ -6,7 +6,7 @@ import com.badoo.reaktive.test.observable.assertValue
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.utils.NANOS_IN_MILLI
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.AtomicLong
 import com.badoo.reaktive.utils.clock.Clock
 import kotlin.test.Test
 

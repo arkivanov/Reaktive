@@ -3,7 +3,10 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.base.ErrorCallback
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.SharedList
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> Observable<T>.buffer(count: Int, skip: Int = 0): Observable<List<T>> {
     require(count > 0) { "Count value must be positive" }
@@ -11,7 +14,7 @@ fun <T> Observable<T>.buffer(count: Int, skip: Int = 0): Observable<List<T>> {
 
     return observable { emitter ->
         val list = SharedList<T>(count)
-        val skipCounter = AtomicInt(0)
+        val skipCounter = atomic(0)
 
         subscribe(
             object : ObservableObserver<T>, ErrorCallback by emitter {

@@ -10,8 +10,8 @@ import com.badoo.reaktive.test.observable.TestObservable
 import com.badoo.reaktive.test.observable.TestObservableObserver
 import com.badoo.reaktive.test.observable.assertComplete
 import com.badoo.reaktive.test.observable.assertValues
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.resetReaktiveUncaughtErrorHandler
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -103,7 +103,7 @@ class SubscribeTest {
     @Test
     fun calls_onError_WHEN_onSubscribe_thrown_exception() {
         val exception = Exception()
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
 
         upstream.subscribe(
             onSubscribe = { throw exception },
@@ -139,7 +139,7 @@ class SubscribeTest {
     @Test
     fun calls_onError_WHEN_onNext_thrown_exception() {
         val exception = Exception()
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
 
         upstream.subscribe(
             onError = { caughtException.value = it },

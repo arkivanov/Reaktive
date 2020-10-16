@@ -1,6 +1,8 @@
 package com.badoo.reaktive.utils.serializer
 
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.compareAndSet
 import com.badoo.reaktive.utils.queue.Queue
 import kotlin.jvm.Volatile
 
@@ -13,7 +15,7 @@ internal abstract class SerializerImpl<in T>(
 
     @Volatile
     private var isDone = false
-    private val counter = AtomicInt()
+    private val counter = atomic(0)
 
     override fun accept(value: T) {
         if (isDone) {

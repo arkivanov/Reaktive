@@ -9,14 +9,14 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.observable
 import com.badoo.reaktive.observable.serialize
 import com.badoo.reaktive.utils.ObjectReference
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
 
 fun <T> Iterable<Single<T>>.merge(): Observable<T> =
     observable { emitter ->
         val disposables = CompositeDisposable()
         emitter.setDisposable(disposables)
         val serializedEmitter = emitter.serialize()
-        val activeSourceCount = AtomicInt(1)
+        val activeSourceCount = atomic(1)
 
         forEach { upstream ->
             activeSourceCount.addAndGet(1)

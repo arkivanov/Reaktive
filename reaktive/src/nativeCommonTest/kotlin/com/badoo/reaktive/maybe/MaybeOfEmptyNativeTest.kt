@@ -4,7 +4,7 @@ import com.badoo.reaktive.test.doInBackgroundBlocking
 import com.badoo.reaktive.test.maybe.TestMaybeObserver
 import com.badoo.reaktive.test.maybe.assertComplete
 import com.badoo.reaktive.test.maybe.test
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Test
 
 class MaybeOfEmptyNativeTest {

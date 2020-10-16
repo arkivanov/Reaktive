@@ -1,13 +1,15 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> Observable<T>.skip(count: Long): Observable<T> =
     observable { emitter ->
         subscribe(
             object : ObservableObserver<T>, ObservableCallbacks<T> by emitter {
-                private var remaining = AtomicLong(count)
+                private var remaining = atomic(count)
 
                 override fun onSubscribe(disposable: Disposable) {
                     emitter.setDisposable(disposable)

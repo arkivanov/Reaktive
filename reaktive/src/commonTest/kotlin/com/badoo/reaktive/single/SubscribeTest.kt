@@ -8,8 +8,8 @@ import com.badoo.reaktive.test.base.hasSubscribers
 import com.badoo.reaktive.test.single.TestSingle
 import com.badoo.reaktive.test.single.TestSingleObserver
 import com.badoo.reaktive.test.single.assertSuccess
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.reaktiveUncaughtErrorHandler
 import com.badoo.reaktive.utils.resetReaktiveUncaughtErrorHandler
 import kotlin.test.AfterTest
@@ -99,7 +99,7 @@ class SubscribeTest {
     @Test
     fun calls_onError_WHEN_onSubscribe_thrown_exception() {
         val exception = Exception()
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
 
         upstream.subscribe(
             onSubscribe = { throw exception },
@@ -135,7 +135,7 @@ class SubscribeTest {
     @Test
     fun calls_uncaught_exception_handler_WHEN_onSuccess_thrown_exception() {
         val exception = Exception()
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
         reaktiveUncaughtErrorHandler = { caughtException.value = it }
 
         upstream.subscribe(onSuccess = { throw exception })
@@ -163,7 +163,7 @@ class SubscribeTest {
     fun calls_uncaught_exception_handler_with_CompositeException_WHEN_onError_thrown_exception() {
         val exception1 = Exception()
         val exception2 = Exception()
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
         reaktiveUncaughtErrorHandler = { caughtException.value = it }
 
         upstream.subscribe(onError = { throw exception2 })

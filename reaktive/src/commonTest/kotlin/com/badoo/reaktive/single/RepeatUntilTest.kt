@@ -9,9 +9,9 @@ import com.badoo.reaktive.test.observable.assertNotComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.test.single.TestSingle
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -35,7 +35,7 @@ class RepeatUntilTest : SingleToObservableTests by SingleToObservableTestsImpl({
     @Test
     fun resubscribes_to_upstream_WHEN_upstream_completed_and_predicate_is_false() {
         val upstreams = List(2) { TestSingle<Int>() }
-        val index = AtomicInt(-1)
+        val index = atomic(-1)
 
         val upstream =
             singleUnsafe<Int> { observer ->

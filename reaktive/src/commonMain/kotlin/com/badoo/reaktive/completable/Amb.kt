@@ -1,7 +1,7 @@
 package com.badoo.reaktive.completable
 
 import com.badoo.reaktive.base.CompositeDisposableObserver
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
 
 fun Iterable<Completable>.amb(): Completable =
     completable { emitter ->

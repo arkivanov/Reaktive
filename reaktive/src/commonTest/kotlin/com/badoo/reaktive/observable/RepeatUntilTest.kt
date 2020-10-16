@@ -9,9 +9,9 @@ import com.badoo.reaktive.test.observable.assertNotComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.onNext
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTestsImpl({ repeatUntil { true } }) {
     @Test
     fun resubscribes_on_complete_till_predicate_is_true() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val upstream = TestObservable<Int?>()
 
         val observer = upstream.repeatUntil { count.value >= 2 }.test()
@@ -46,7 +46,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
     @Test
     fun resubscribes_to_upstream_WHEN_upstream_completed_and_predicate_is_false() {
         val upstreams = List(2) { TestObservable<Int>() }
-        val index = AtomicInt(-1)
+        val index = atomic(-1)
 
         val upstream =
             observableUnsafe<Int> { observer ->
@@ -62,7 +62,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
 
     @Test
     fun resubscribes_on_complete_multiple_emissions_predicate_is_false() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val upstream = observable<Int> {
             for (i in 1..10) {
                 it.onNext(count.addAndGet(1))
@@ -77,7 +77,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
 
     @Test
     fun completes_after_second_iteration_WHEN_predicate_changes_to_true() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val upstream = TestObservable<Int?>()
         val observer = upstream.repeatUntil { count.value > 1 }.test()
 
@@ -91,7 +91,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
 
     @Test
     fun does_not_completes_after_second_iteration_WHEN_predicate_is_still_false() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val upstream = TestObservable<Int?>()
         val observer = upstream.repeatUntil { count.value > 2 }.test()
 
@@ -105,7 +105,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
 
     @Test
     fun does_not_resubscribe_to_upstream_WHEN_disposed_and_upstream_completed_predicate_is_false() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val isResubscribed = AtomicBoolean()
         val upstreamObserver = AtomicReference<ObservableObserver<Int>?>(null)
 
@@ -130,7 +130,7 @@ class RepeatUntilTest : ObservableToObservableTests by ObservableToObservableTes
 
     @Test
     fun does_not_resubscribe_to_upstream_recursively_predicate_is_false() {
-        val count = AtomicInt(0)
+        val count = atomic(0)
         val isFirstIteration = AtomicBoolean(true)
         val isFirstIterationFinished = AtomicBoolean()
         val isSecondIterationRecursive = AtomicBoolean()

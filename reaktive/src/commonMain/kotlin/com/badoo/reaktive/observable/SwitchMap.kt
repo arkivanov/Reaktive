@@ -8,9 +8,9 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.disposable.plusAssign
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.update
-import com.badoo.reaktive.utils.atomic.updateAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.change
+import com.badoo.reaktive.utils.atomics.changeAndGet
 
 fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> =
     observable { emitter ->
@@ -20,7 +20,7 @@ fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> 
         val innerDisposableWrapper = DisposableWrapper()
         disposables += innerDisposableWrapper
 
-        val state = AtomicReference(SwitchMapState())
+        val state = atomic(SwitchMapState())
         val serializedEmitter = emitter.serialize()
 
         subscribe(
@@ -56,7 +56,7 @@ fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> 
 
                             override fun onComplete() {
                                 val actualState = state
-                                    .updateAndGet { previousState ->
+                                    .changeAndGet { previousState ->
                                         if (previousState.innerObserver == this) {
                                             previousState.copy(innerObserver = null)
                                         } else {
@@ -67,7 +67,7 @@ fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> 
                             }
                         }
 
-                    state.update { previousState ->
+                    state.change { previousState ->
                         previousState.copy(innerObserver = innerObserver)
                     }
                     observable.subscribeSafe(innerObserver)
@@ -75,7 +75,7 @@ fun <T, R> Observable<T>.switchMap(mapper: (T) -> Observable<R>): Observable<R> 
 
                 override fun onComplete() {
                     val actualState =
-                        state.updateAndGet { previousState -> previousState.copy(isUpstreamCompleted = true) }
+                        state.changeAndGet { previousState -> previousState.copy(isUpstreamCompleted = true) }
                     checkStateFinished(actualState)
                 }
 

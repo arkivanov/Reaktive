@@ -9,9 +9,9 @@ import com.badoo.reaktive.test.observable.assertNotComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.onNext
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getValue
-import com.badoo.reaktive.utils.atomic.setValue
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.getValue
+import com.badoo.reaktive.utils.atomics.setValue
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals

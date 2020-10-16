@@ -13,12 +13,13 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.single.repeatWhen
 import com.badoo.reaktive.single.singleOf
 import com.badoo.reaktive.subject.unicast.UnicastSubject
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicLong
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndSet
-import com.badoo.reaktive.utils.atomic.update
-import com.badoo.reaktive.utils.atomic.updateAndGet
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.change
+import com.badoo.reaktive.utils.atomics.changeAndGet
+import com.badoo.reaktive.utils.atomics.getAndSet
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.serializer.Serializer
 import com.badoo.reaktive.utils.serializer.serializer
 
@@ -79,7 +80,7 @@ private class WindowBySignal<T, S>(
     private val actor = serializer(onValue = ::processEvent)
     private val upstreamObserver = UpstreamObserver<T>(actor)
     private val openingObserver = OpeningObserver<S>(actor)
-    private val windows: AtomicReference<Set<ClosingObserver<T>>> = AtomicReference(emptySet())
+    private val windows: AtomicReference<Set<ClosingObserver<T>>> = atomic(emptySet())
 
     init {
         emitter.setCancellable { actor.accept(Event.DownstreamDisposed) }
@@ -121,7 +122,7 @@ private class WindowBySignal<T, S>(
 
         if (windowWrapper.isSubscribed.value) {
             val closingObserver = ClosingObserver(actor, closing, window)
-            windows.update { it + closingObserver }
+            windows.change { it + closingObserver }
 
             try {
                 closing.subscribe(closingObserver)
@@ -137,7 +138,7 @@ private class WindowBySignal<T, S>(
     }
 
     private fun onClose(window: ClosingObserver<T>): Boolean {
-        val windowCount = windows.updateAndGet { it - window }.size
+        val windowCount = windows.changeAndGet { it - window }.size
         window.subject.onComplete()
 
         if ((windowCount == 0) && (upstreamObserver.isDone() || openingObserver.isDone())) {
@@ -232,7 +233,7 @@ private class WindowBySignal<T, S>(
     private class WindowWrapper<out T>(
         private val delegate: Observable<T>
     ) : Observable<T> {
-        val isSubscribed = AtomicBoolean()
+        val isSubscribed = atomic(false)
 
         override fun subscribe(observer: ObservableObserver<T>) {
             isSubscribed.value = true
@@ -243,7 +244,7 @@ private class WindowBySignal<T, S>(
     private abstract class AbstractObserver(
         private val actor: Serializer<Any?>
     ) : Observer, ErrorCallback, DisposableWrapper() {
-        private var isCompleted = AtomicBoolean()
+        private var isCompleted = atomic(false)
 
         fun markCompleted() {
             isCompleted.value = true
@@ -289,7 +290,7 @@ private class WindowBySignal<T, S>(
         val closing: Completable,
         val subject: UnicastSubject<T>
     ) : AbstractObserver(actor), CompletableObserver {
-        var count = AtomicLong()
+        var count = atomic(0L)
 
         override fun onComplete() {
             actor.accept(Event.Close(this))

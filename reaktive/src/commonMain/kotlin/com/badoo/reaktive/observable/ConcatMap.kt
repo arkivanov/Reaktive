@@ -7,7 +7,8 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.disposable.addTo
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.queue.SharedQueue
 import com.badoo.reaktive.utils.serializer.Serializer
 import com.badoo.reaktive.utils.serializer.serializer
@@ -27,7 +28,7 @@ private class ConcatMapObserver<in T, in R>(
     private val actor = serializer(::processEvent)
     private val innerObserver = InnerObserver(callbacks, actor).addTo(this)
     private val queue = SharedQueue<T>()
-    private val state = AtomicReference(State.IDLE)
+    private val state = atomic(State.IDLE)
 
     override fun onSubscribe(disposable: Disposable) {
         add(disposable)

@@ -1,10 +1,10 @@
 package com.badoo.reaktive.utils.serializer
 
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndUpdate
-import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.getAndChange
+import com.badoo.reaktive.utils.atomics.change
 import com.badoo.reaktive.utils.plusSorted
 
 /*
@@ -16,7 +16,7 @@ internal abstract class SerializerImpl<in T>(
 
     private val queue = AtomicReference<List<T>>(emptyList())
     private val isDone = AtomicBoolean()
-    private val counter = AtomicInt()
+    private val counter = atomic()
 
     override fun accept(value: T) {
         if (isDone.value) {
@@ -33,7 +33,7 @@ internal abstract class SerializerImpl<in T>(
                 return
             }
         } else {
-            queue.update { it.addAndSort(value, comparator) }
+            queue.change { it.addAndSort(value, comparator) }
 
             if (counter.addAndGet(1) > 1) {
                 return
@@ -53,7 +53,7 @@ internal abstract class SerializerImpl<in T>(
         var missed = 1
         while (true) {
             while (true) {
-                val oldQueue = queue.getAndUpdate { it.drop(1) }
+                val oldQueue = queue.getAndChange { it.drop(1) }
 
                 if (oldQueue.isEmpty()) {
                     break

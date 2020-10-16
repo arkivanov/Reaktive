@@ -1,7 +1,9 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.AtomicLong
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.clock.Clock
 import com.badoo.reaktive.utils.clock.DefaultClock
 
@@ -11,7 +13,7 @@ internal fun <T> Observable<T>.throttle(windowMillis: Long, clock: Clock): Obser
     observable { emitter ->
         subscribe(
             object : ObservableObserver<T>, ObservableCallbacks<T> by emitter {
-                private val lastTime = AtomicLong(-windowMillis)
+                private val lastTime = atomic(-windowMillis)
 
                 override fun onSubscribe(disposable: Disposable) {
                     emitter.setDisposable(disposable)

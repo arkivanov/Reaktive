@@ -5,7 +5,7 @@ import com.badoo.reaktive.completable.CompletableEmitter
 import com.badoo.reaktive.completable.CompletableObserver
 import com.badoo.reaktive.completable.completable
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 
 class TestCompletableRelay : Completable, CompletableEmitter {
 

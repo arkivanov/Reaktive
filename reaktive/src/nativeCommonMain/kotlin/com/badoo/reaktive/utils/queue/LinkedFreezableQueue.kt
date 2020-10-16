@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.queue
 
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.freeze
 
@@ -10,7 +10,7 @@ internal class LinkedFreezableQueue<T>(
 
     private val head = AtomicReference<Node<T>?>(null)
     private val tail = AtomicReference<Node<T>?>(null)
-    private val _size = AtomicInt(0)
+    private val _size = atomic(0)
 
     init {
         src?.forEach(::offer)
@@ -72,6 +72,6 @@ internal class LinkedFreezableQueue<T>(
     private class Node<T>(
         val item: T
     ) {
-        val next: AtomicReference<Node<T>?> = AtomicReference(null)
+        val next: AtomicReference<Node<T>?> = atomic(null)
     }
 }

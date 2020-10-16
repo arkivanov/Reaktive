@@ -4,7 +4,8 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> Observable<T>.sample(windowMillis: Long, scheduler: Scheduler): Observable<T> =
     observable { emitter ->
@@ -15,7 +16,7 @@ fun <T> Observable<T>.sample(windowMillis: Long, scheduler: Scheduler): Observab
 
         subscribe(
             object : ObservableObserver<T> {
-                private val lastValue = AtomicReference<SampleLastValue<T>?>(null)
+                private val lastValue = atomic<SampleLastValue<T>?>(null)
 
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable

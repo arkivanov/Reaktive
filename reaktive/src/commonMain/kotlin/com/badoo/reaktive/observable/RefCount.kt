@@ -3,15 +3,16 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndUpdate
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.getAndChange
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> ConnectableObservable<T>.refCount(subscriberCount: Int = 1): Observable<T> {
     require(subscriberCount > 0)
 
-    val subscribeCount = AtomicInt()
-    val disposable = AtomicReference<Disposable?>(null)
+    val subscribeCount = atomic(0)
+    val disposable = atomic<Disposable?>(null)
 
     return observable { emitter ->
         val disposables = CompositeDisposable()
@@ -21,7 +22,7 @@ fun <T> ConnectableObservable<T>.refCount(subscriberCount: Int = 1): Observable<
             Disposable {
                 if (subscribeCount.addAndGet(-1) == 0) {
                     disposable
-                        .getAndUpdate { null }
+                        .getAndChange { null }
                         ?.dispose()
                 }
             }

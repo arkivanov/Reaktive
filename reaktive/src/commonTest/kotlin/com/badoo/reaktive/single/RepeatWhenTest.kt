@@ -10,9 +10,9 @@ import com.badoo.reaktive.test.observable.assertComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.test.single.TestSingle
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.plusAssign
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.atomicList
+import com.badoo.reaktive.utils.atomics.plusAssign
 import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,7 +36,7 @@ class RepeatWhenTest : SingleToObservableTests by SingleToObservableTestsImpl({ 
 
     @Test
     fun emits_all_values_from_all_observers_in_order_WHEN_upstream_and_handler_are_synchronous() {
-        val number = AtomicInt()
+        val number = atomic()
         val upstream =
             singleUnsafe<Int?> { observer ->
                 observer.onSubscribe(Disposable())
@@ -62,8 +62,8 @@ class RepeatWhenTest : SingleToObservableTests by SingleToObservableTestsImpl({ 
 
     @Test
     fun does_not_subscribe_to_upstream_recursively() {
-        val subscribeCounter = AtomicInt()
-        val maxSubscribers = AtomicInt()
+        val subscribeCounter = atomic()
+        val maxSubscribers = atomic()
         val upstream =
             singleUnsafe<Int?> { observer ->
                 subscribeCounter.addAndGet(1)

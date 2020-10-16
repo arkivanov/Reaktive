@@ -5,13 +5,14 @@ import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.observable
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T> Single<T>.repeatUntil(predicate: (T) -> Boolean): Observable<T> =
     observable { emitter ->
         val observer =
             object : SingleObserver<T>, ErrorCallback by emitter {
-                private val recursiveGuard = AtomicInt()
+                private val recursiveGuard = atomic(0)
 
                 override fun onSubscribe(disposable: Disposable) {
                     emitter.setDisposable(disposable)

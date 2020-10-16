@@ -6,8 +6,8 @@ import com.badoo.reaktive.test.observable.DefaultObservableObserver
 import com.badoo.reaktive.test.observable.TestObservable
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.utils.SharedList
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -86,7 +86,7 @@ class DoOnAfterNextTest :
 
     @Test
     fun does_no_call_action_WHEN_previous_lambda_thrown_exception() {
-        val count = AtomicInt()
+        val count = atomic()
 
         val upstream = TestObservableRelay<Int>()
         upstream

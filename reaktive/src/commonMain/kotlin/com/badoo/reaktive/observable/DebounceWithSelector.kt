@@ -9,8 +9,9 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.disposable.plusAssign
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndUpdate
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.getAndChange
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable<T> =
     observable { emitter ->
@@ -24,7 +25,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
 
         subscribe(
             object : ObservableObserver<T>, ErrorCallback by serializedEmitter {
-                private val pendingValue = AtomicReference<DebouncePendingValue<T>?>(null)
+                private val pendingValue = atomic<DebouncePendingValue<T>?>(null)
 
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
@@ -58,7 +59,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
                             }
 
                             override fun onComplete() {
-                                pendingValue.getAndUpdate { if (it === newPendingValue) null else it }
+                                pendingValue.getAndChange { if (it === newPendingValue) null else it }
                                     ?.takeIf { it === newPendingValue }
                                     ?.let { serializedEmitter.onNext(it.value) }
                             }
@@ -68,7 +69,7 @@ fun <T> Observable<T>.debounce(debounceSelector: (T) -> Completable): Observable
                 }
 
                 override fun onComplete() {
-                    pendingValue.getAndUpdate { null }
+                    pendingValue.getAndChange { null }
                         ?.let { serializedEmitter.onNext(it.value) }
                     serializedEmitter.onComplete()
                 }

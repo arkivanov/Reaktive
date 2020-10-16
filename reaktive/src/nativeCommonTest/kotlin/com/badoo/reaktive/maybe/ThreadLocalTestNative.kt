@@ -3,7 +3,7 @@ package com.badoo.reaktive.maybe
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.test.doInBackgroundBlocking
 import com.badoo.reaktive.test.maybe.TestMaybe
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.reaktiveUncaughtErrorHandler
 import com.badoo.reaktive.utils.resetReaktiveUncaughtErrorHandler
 import kotlin.native.concurrent.ensureNeverFrozen
@@ -46,7 +46,7 @@ class ThreadLocalTestNative {
     }
 
     private fun testCallsUncaughtExceptionWhenEventOccurredOnBackground(block: (MaybeCallbacks<Unit>) -> Unit) {
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
         reaktiveUncaughtErrorHandler = { caughtException.value = it }
         val upstream = TestMaybe<Unit>()
 

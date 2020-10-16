@@ -10,7 +10,8 @@ import com.badoo.reaktive.completable.serialize
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.ObjectReference
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T> Observable<T>.flatMapCompletable(mapper: (T) -> Completable): Completable =
     completable { emitter ->
@@ -24,7 +25,7 @@ private class FlatMapCompletableObserver<in T>(
     private val mapper: (T) -> Completable
 ) : CompositeDisposable(), ObservableObserver<T>, ErrorCallback by callbacks {
 
-    private val activeSourceCount = AtomicInt(1)
+    private val activeSourceCount = atomic(1)
 
     override fun onSubscribe(disposable: Disposable) {
         add(disposable)

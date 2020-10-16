@@ -8,14 +8,15 @@ import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.MaybeObserver
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T> Observable<T>.repeatWhen(handler: (repeatNumber: Int) -> Maybe<*>): Observable<T> =
     observable { emitter ->
         val observer =
             object : ObservableObserver<T>, ValueCallback<T> by emitter, ErrorCallback by emitter {
-                private val repeatNumber = AtomicInt()
-                private val recursiveGuard = AtomicInt()
+                private val repeatNumber = atomic(0)
+                private val recursiveGuard = atomic(0)
 
                 private val repeatObserver: MaybeObserver<Any?> =
                     object : MaybeObserver<Any?>, Observer by this, CompletableCallbacks by emitter {

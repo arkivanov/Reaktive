@@ -8,10 +8,10 @@ import com.badoo.reaktive.test.base.assertSubscribed
 import com.badoo.reaktive.test.completable.assertComplete
 import com.badoo.reaktive.test.completable.assertNotComplete
 import com.badoo.reaktive.test.completable.test
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.plusAssign
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomicList
+import com.badoo.reaktive.utils.atomics.plusAssign
 import com.badoo.reaktive.utils.ensureNeverFrozen
 import com.badoo.reaktive.utils.freeze
 import kotlin.test.Test

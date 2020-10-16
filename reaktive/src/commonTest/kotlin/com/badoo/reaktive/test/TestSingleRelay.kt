@@ -5,7 +5,7 @@ import com.badoo.reaktive.single.Single
 import com.badoo.reaktive.single.SingleEmitter
 import com.badoo.reaktive.single.SingleObserver
 import com.badoo.reaktive.single.single
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 
 class TestSingleRelay<T> : Single<T>, SingleEmitter<T> {
 

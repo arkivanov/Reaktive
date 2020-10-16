@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils
 
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.lock.Lock
 import com.badoo.reaktive.utils.lock.synchronized
 import kotlin.native.concurrent.AtomicLong
@@ -10,7 +10,7 @@ internal class DelayQueue<T : Any> {
 
     private val lock = Lock()
     private val condition = lock.newCondition()
-    private val queueRef: AtomicReference<List<Holder<T>>?> = AtomicReference(emptyList())
+    private val queueRef: AtomicReference<List<Holder<T>>?> = atomic(emptyList())
 
     /**
      * Terminates the queue. Any currently waiting [take] methods will immediately return null.

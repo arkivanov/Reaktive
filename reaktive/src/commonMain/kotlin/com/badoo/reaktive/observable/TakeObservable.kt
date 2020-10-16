@@ -3,7 +3,9 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.DisposableWrapper
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 
 /**
  * Emit only the first [limit] items emitted by source.
@@ -15,7 +17,7 @@ fun <T> Observable<T>.take(limit: Int): Observable<T> {
         val disposableWrapper = DisposableWrapper()
         emitter.setDisposable(disposableWrapper)
 
-        val remaining = AtomicInt(limit)
+        val remaining = atomic(limit)
 
         subscribe(object : ObservableObserver<T>, CompletableCallbacks by emitter {
             override fun onSubscribe(disposable: Disposable) {

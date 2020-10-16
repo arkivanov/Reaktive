@@ -1,7 +1,7 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.scheduler.Scheduler
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.AtomicLong
 
 fun observableInterval(startDelayMillis: Long, periodMillis: Long, scheduler: Scheduler): Observable<Long> =
     observable { emitter ->

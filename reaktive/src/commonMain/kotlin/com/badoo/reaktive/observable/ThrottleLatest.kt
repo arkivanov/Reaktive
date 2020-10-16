@@ -11,8 +11,8 @@ import com.badoo.reaktive.disposable.DisposableWrapper
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.Uninitialized
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.serializer.Serializer
 import com.badoo.reaktive.utils.serializer.serializer
 
@@ -46,8 +46,8 @@ private class ThrottleLatest<T>(
 ) {
 
     private val actor = serializer(onValue = ::processEvent)
-    private val lastValue = AtomicReference<Any?>(Uninitialized)
-    private val isTimeoutActive = AtomicBoolean()
+    private val lastValue = atomic<Any?>(Uninitialized)
+    private val isTimeoutActive = atomic(false)
     private val timeoutObserver = TimeoutObserver(actor)
 
     init {

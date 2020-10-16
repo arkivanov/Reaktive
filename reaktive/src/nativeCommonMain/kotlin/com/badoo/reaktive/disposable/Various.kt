@@ -6,7 +6,7 @@ import kotlin.native.concurrent.AtomicInt
 actual inline fun Disposable(crossinline onDispose: () -> Unit): Disposable =
     object : Disposable {
         @Suppress("ObjectPropertyName") // Backing property
-        private var _isDisposed = AtomicInt(0)
+        private var _isDisposed = atomic(0)
         override val isDisposed: Boolean get() = _isDisposed.value != 0
 
         override fun dispose() {
@@ -20,7 +20,7 @@ actual inline fun Disposable(crossinline onDispose: () -> Unit): Disposable =
 actual fun Disposable(): Disposable = SimpleDisposable()
 
 private class SimpleDisposable : Disposable {
-    private var _isDisposed = AtomicInt(0)
+    private var _isDisposed = atomic(0)
     override val isDisposed: Boolean get() = _isDisposed.value != 0
 
     override fun dispose() {

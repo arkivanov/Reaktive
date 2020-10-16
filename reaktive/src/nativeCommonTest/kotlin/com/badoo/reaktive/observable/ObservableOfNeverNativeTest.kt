@@ -4,7 +4,7 @@ import com.badoo.reaktive.test.base.assertSubscribed
 import com.badoo.reaktive.test.doInBackgroundBlocking
 import com.badoo.reaktive.test.observable.TestObservableObserver
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Test
 
 class ObservableOfNeverNativeTest {

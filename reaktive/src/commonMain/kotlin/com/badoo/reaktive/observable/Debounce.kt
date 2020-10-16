@@ -6,9 +6,10 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndUpdate
-import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.change
+import com.badoo.reaktive.utils.atomics.getAndChange
+import com.badoo.reaktive.utils.atomics.value
 
 fun <T> Observable<T>.debounce(timeoutMillis: Long, scheduler: Scheduler): Observable<T> =
     observable { emitter ->
@@ -19,7 +20,7 @@ fun <T> Observable<T>.debounce(timeoutMillis: Long, scheduler: Scheduler): Obser
 
         subscribe(
             object : ObservableObserver<T> {
-                private val pendingValue = AtomicReference<DebouncePendingValue<T>?>(null)
+                private val pendingValue = atomic<DebouncePendingValue<T>?>(null)
 
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
@@ -32,7 +33,7 @@ fun <T> Observable<T>.debounce(timeoutMillis: Long, scheduler: Scheduler): Obser
                     executor.cancel()
 
                     executor.submit(timeoutMillis) {
-                        pendingValue.update {
+                        pendingValue.change {
                             if (it === newPendingValue) null else it
                         }
 
@@ -44,7 +45,7 @@ fun <T> Observable<T>.debounce(timeoutMillis: Long, scheduler: Scheduler): Obser
                     executor.cancel()
 
                     executor.submit {
-                        pendingValue.getAndUpdate { null }?.let { emitter.onNext(it.value) }
+                        pendingValue.getAndChange { null }?.let { emitter.onNext(it.value) }
                         emitter.onComplete()
                     }
                 }

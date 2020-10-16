@@ -5,8 +5,8 @@ import com.badoo.reaktive.test.base.assertError
 import com.badoo.reaktive.test.base.hasSubscribers
 import com.badoo.reaktive.test.completable.TestCompletable
 import com.badoo.reaktive.test.observable.*
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.change
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -807,12 +807,12 @@ class WindowBySignalTest :
     private fun <T> TestObservableObserver<T>.lastValue(): T = values.last()
 
     private class Closings {
-        private val map = AtomicReference(emptyMap<Int, TestCompletable>())
+        private val map = atomic(emptyMap<Int, TestCompletable>())
 
         fun create(value: Int): TestCompletable {
             assertFalse(value in map.value)
             val closing = TestCompletable()
-            map.update { it + (value to closing) }
+            map.change { it + (value to closing) }
 
             return closing
         }

@@ -11,7 +11,7 @@ import com.badoo.reaktive.test.observable.assertComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.onNext
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,7 +37,7 @@ class RepeatWhenTest : ObservableToObservableTests by ObservableToObservableTest
 
     @Test
     fun emits_all_values_from_all_observers_in_order_WHEN_upstream_and_handler_are_synchronous() {
-        val number = AtomicInt()
+        val number = atomic()
         val upstream =
             observableUnsafe<Int?> { observer ->
                 observer.onSubscribe(Disposable())
@@ -65,8 +65,8 @@ class RepeatWhenTest : ObservableToObservableTests by ObservableToObservableTest
 
     @Test
     fun does_not_subscribe_to_upstream_recursively() {
-        val subscribeCounter = AtomicInt()
-        val maxSubscribers = AtomicInt()
+        val subscribeCounter = atomic()
+        val maxSubscribers = atomic()
         val upstream =
             observableUnsafe<Int?> { observer ->
                 subscribeCounter.addAndGet(1)

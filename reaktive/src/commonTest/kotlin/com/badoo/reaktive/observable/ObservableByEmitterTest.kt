@@ -10,10 +10,10 @@ import com.badoo.reaktive.test.observable.assertNoValues
 import com.badoo.reaktive.test.observable.assertNotComplete
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.plusAssign
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomicList
+import com.badoo.reaktive.utils.atomics.plusAssign
 import com.badoo.reaktive.utils.ensureNeverFrozen
 import com.badoo.reaktive.utils.freeze
 import kotlin.test.Test

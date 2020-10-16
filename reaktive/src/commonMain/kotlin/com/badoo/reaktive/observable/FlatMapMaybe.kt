@@ -8,7 +8,8 @@ import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.MaybeObserver
 import com.badoo.reaktive.maybe.map
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T, R> Observable<T>.flatMapMaybe(mapper: (T) -> Maybe<R>): Observable<R> =
     observable { emitter ->
@@ -16,7 +17,7 @@ fun <T, R> Observable<T>.flatMapMaybe(mapper: (T) -> Maybe<R>): Observable<R> =
 
         val upstreamObserver =
             object : CompositeDisposableObserver(), ObservableObserver<T>, ErrorCallback by serializedEmitter {
-                private val activeSourceCount = AtomicInt(1)
+                private val activeSourceCount = atomic(1)
 
                 private val mappedObserver: MaybeObserver<R> =
                     object : MaybeObserver<R>, Observer by this, CompletableCallbacks by this {

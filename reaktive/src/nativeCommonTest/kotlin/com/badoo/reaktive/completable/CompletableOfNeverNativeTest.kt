@@ -4,7 +4,7 @@ import com.badoo.reaktive.test.base.assertSubscribed
 import com.badoo.reaktive.test.completable.TestCompletableObserver
 import com.badoo.reaktive.test.completable.test
 import com.badoo.reaktive.test.doInBackgroundBlocking
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import kotlin.test.Test
 
 class CompletableOfNeverNativeTest {

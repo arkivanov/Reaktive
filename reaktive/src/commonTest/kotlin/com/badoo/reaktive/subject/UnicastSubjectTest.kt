@@ -5,7 +5,7 @@ import com.badoo.reaktive.test.base.assertError
 import com.badoo.reaktive.test.observable.assertNoValues
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -63,7 +63,7 @@ class UnicastSubjectTest : SubjectGenericTests by SubjectGenericTests(UnicastSub
 
     @Test
     fun calls_onTerminate_WHEN_not_subscribed_and_onComplete_called() {
-        val callCount = AtomicInt()
+        val callCount = atomic()
         val subject = UnicastSubject<Int?> { callCount.addAndGet(1) }
 
         subject.onComplete()
@@ -73,7 +73,7 @@ class UnicastSubjectTest : SubjectGenericTests by SubjectGenericTests(UnicastSub
 
     @Test
     fun calls_onTerminate_WHEN_subscribed_and_onComplete_called() {
-        val callCount = AtomicInt()
+        val callCount = atomic()
         val subject = UnicastSubject<Int?> { callCount.addAndGet(1) }
 
         subject.test()
@@ -84,7 +84,7 @@ class UnicastSubjectTest : SubjectGenericTests by SubjectGenericTests(UnicastSub
 
     @Test
     fun calls_onTerminate_WHEN_not_subscribed_and_onError_called() {
-        val callCount = AtomicInt()
+        val callCount = atomic()
         val subject = UnicastSubject<Int?> { callCount.addAndGet(1) }
 
         subject.onError(Throwable())
@@ -94,7 +94,7 @@ class UnicastSubjectTest : SubjectGenericTests by SubjectGenericTests(UnicastSub
 
     @Test
     fun calls_onTerminate_WHEN_subscribed_and_onError_called() {
-        val callCount = AtomicInt()
+        val callCount = atomic()
         val subject = UnicastSubject<Int?> { callCount.addAndGet(1) }
 
         subject.test()
@@ -105,7 +105,7 @@ class UnicastSubjectTest : SubjectGenericTests by SubjectGenericTests(UnicastSub
 
     @Test
     fun calls_onTerminate_WHEN_observer_unsubscribed() {
-        val callCount = AtomicInt()
+        val callCount = atomic()
         val subject = UnicastSubject<Int?> { callCount.addAndGet(1) }
         val observer = subject.test()
 

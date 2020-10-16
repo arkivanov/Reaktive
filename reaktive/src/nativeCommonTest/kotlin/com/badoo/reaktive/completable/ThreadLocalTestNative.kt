@@ -3,7 +3,7 @@ package com.badoo.reaktive.completable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.test.completable.TestCompletable
 import com.badoo.reaktive.test.doInBackgroundBlocking
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.AtomicReference
 import com.badoo.reaktive.utils.reaktiveUncaughtErrorHandler
 import com.badoo.reaktive.utils.resetReaktiveUncaughtErrorHandler
 import kotlin.native.concurrent.ensureNeverFrozen
@@ -41,7 +41,7 @@ class ThreadLocalTestNative {
     }
 
     private fun testCallsUncaughtExceptionWhenEventOccurredOnBackground(block: (CompletableCallbacks) -> Unit) {
-        val caughtException: AtomicReference<Throwable?> = AtomicReference(null)
+        val caughtException: AtomicReference<Throwable?> = atomic(null)
         reaktiveUncaughtErrorHandler = { caughtException.value = it }
         val upstream = TestCompletable()
 

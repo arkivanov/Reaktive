@@ -1,7 +1,8 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 
 fun <T> ConnectableObservable<T>.autoConnect(subscriberCount: Int = 1): Observable<T> {
     if (subscriberCount <= 0) {
@@ -9,7 +10,7 @@ fun <T> ConnectableObservable<T>.autoConnect(subscriberCount: Int = 1): Observab
         return this
     }
 
-    val subscribeCount = AtomicInt()
+    val subscribeCount = atomic(0)
 
     return observable { emitter ->
         this@autoConnect.subscribe(

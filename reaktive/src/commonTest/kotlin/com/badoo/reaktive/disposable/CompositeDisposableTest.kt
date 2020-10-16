@@ -1,7 +1,7 @@
 package com.badoo.reaktive.disposable
 
-import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.plusAssign
+import com.badoo.reaktive.utils.atomics.atomicList
+import com.badoo.reaktive.utils.atomics.plusAssign
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

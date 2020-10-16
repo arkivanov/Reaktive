@@ -5,7 +5,7 @@ import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.onNext
 import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.utils.SharedList
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +16,7 @@ class PublishWithSelectorTest : ObservableToObservableTests by ObservableToObser
     @Test
     fun subscribes_to_selected_stream_WHEN_subscribed() {
         val selected: List<TestObservable<Int?>> = listOf(TestObservable(), TestObservable())
-        val index = AtomicInt(-1)
+        val index = atomic(-1)
         val published = upstream.publish { selected[index.addAndGet(1)] }
 
         published.test()

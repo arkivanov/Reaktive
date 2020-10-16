@@ -8,8 +8,8 @@ import com.badoo.reaktive.test.completable.TestCompletable
 import com.badoo.reaktive.test.completable.test
 import com.badoo.reaktive.test.mockUncaughtExceptionHandler
 import com.badoo.reaktive.utils.SharedList
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicInt
 import com.badoo.reaktive.utils.resetReaktiveUncaughtErrorHandler
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -104,7 +104,7 @@ class DoOnAfterFinallyTest : CompletableToCompletableTests by CompletableToCompl
 
     @Test
     fun does_not_call_action_second_time_WHEN_downstream_disposed_and_upstream_completed() {
-        val count = AtomicInt()
+        val count = atomic()
 
         upstream
             .doOnAfterFinally {
@@ -120,7 +120,7 @@ class DoOnAfterFinallyTest : CompletableToCompletableTests by CompletableToCompl
 
     @Test
     fun does_not_call_action_second_time_WHEN_downstream_disposed_and_upstream_produced_error() {
-        val count = AtomicInt()
+        val count = atomic()
 
         upstream
             .doOnAfterFinally {
@@ -136,7 +136,7 @@ class DoOnAfterFinallyTest : CompletableToCompletableTests by CompletableToCompl
 
     @Test
     fun does_not_call_action_second_time_WHEN_upstream_completed_and_downstream_disposed() {
-        val count = AtomicInt()
+        val count = atomic()
 
         val observer =
             upstream
@@ -153,7 +153,7 @@ class DoOnAfterFinallyTest : CompletableToCompletableTests by CompletableToCompl
 
     @Test
     fun does_not_call_action_second_time_WHEN_upstream_produced_error_and_downstream_disposed() {
-        val count = AtomicInt()
+        val count = atomic()
 
         val observer =
             upstream

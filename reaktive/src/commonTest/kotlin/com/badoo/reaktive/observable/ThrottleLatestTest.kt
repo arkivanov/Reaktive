@@ -11,9 +11,9 @@ import com.badoo.reaktive.test.observable.assertValue
 import com.badoo.reaktive.test.observable.assertValues
 import com.badoo.reaktive.test.observable.onNext
 import com.badoo.reaktive.test.observable.test
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getValue
-import com.badoo.reaktive.utils.atomic.setValue
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.getValue
+import com.badoo.reaktive.utils.atomics.setValue
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -329,7 +329,7 @@ class ThrottleLatestTest :
             .test()
 
     private class Timeouts {
-        private var map: Map<Int?, TestCompletable> by AtomicReference(emptyMap())
+        private var map: Map<Int?, TestCompletable> by atomic(emptyMap())
 
         fun create(item: Int?): TestCompletable {
             assertFalse(item in map)

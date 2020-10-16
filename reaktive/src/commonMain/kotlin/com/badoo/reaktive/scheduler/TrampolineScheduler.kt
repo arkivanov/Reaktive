@@ -3,8 +3,10 @@ package com.badoo.reaktive.scheduler
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.minusAssign
 import com.badoo.reaktive.disposable.plusAssign
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicLong
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.compareAndSet
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.clock.Clock
 import com.badoo.reaktive.utils.clock.DefaultClock
 import com.badoo.reaktive.utils.serializer.serializer
@@ -29,7 +31,7 @@ internal class TrampolineScheduler(
     ) : Scheduler.Executor {
 
         private val serializer = serializer(comparator = Comparator(Task::compareTo), onValue = ::execute)
-        private val _isDisposed = AtomicBoolean()
+        private val _isDisposed = atomic(false)
         override val isDisposed: Boolean get() = _isDisposed.value
 
         init {
@@ -108,7 +110,7 @@ internal class TrampolineScheduler(
                 }
 
             private companion object {
-                private val sequencer = AtomicLong()
+                private val sequencer = atomic(0L)
             }
         }
     }

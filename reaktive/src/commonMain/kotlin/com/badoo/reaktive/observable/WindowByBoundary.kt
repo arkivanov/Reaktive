@@ -8,10 +8,12 @@ import com.badoo.reaktive.single.delay
 import com.badoo.reaktive.single.repeat
 import com.badoo.reaktive.single.singleOf
 import com.badoo.reaktive.subject.unicast.UnicastSubject
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
-import com.badoo.reaktive.utils.atomic.AtomicLong
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.getAndSet
+import com.badoo.reaktive.utils.atomics.AtomicReference
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.compareAndSet
+import com.badoo.reaktive.utils.atomics.getAndSet
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.serializer.Serializer
 import com.badoo.reaktive.utils.serializer.serializer
 
@@ -67,11 +69,11 @@ private class WindowByBoundary<T>(
     private val actor = serializer(onValue = ::processEvent)
     private val upstreamObserver = UpstreamObserver<T>(actor)
     private val boundariesObserver = BoundaryObserver(actor)
-    private val valueCount = AtomicLong()
+    private val valueCount = atomic(0L)
 
     init {
         val firstWindow = UnicastSubject<T>()
-        window = AtomicReference(firstWindow)
+        window = atomic(firstWindow)
         startWindow(firstWindow)
         emitter.setCancellable { actor.accept(Event.DownstreamDisposed) }
         upstream.subscribe(upstreamObserver)
@@ -167,7 +169,7 @@ private class WindowByBoundary<T>(
     private class WindowWrapper<out T>(
         private val delegate: Observable<T>
     ) : Observable<T> {
-        val isSubscribed = AtomicBoolean()
+        val isSubscribed = atomic(false)
 
         override fun subscribe(observer: ObservableObserver<T>) {
             isSubscribed.value = true

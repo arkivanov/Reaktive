@@ -7,8 +7,9 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.utils.Uninitialized
-import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.change
+import com.badoo.reaktive.utils.atomics.value
 import com.badoo.reaktive.utils.replace
 
 fun <T, U, R> Observable<T>.withLatestFrom(
@@ -20,7 +21,7 @@ fun <T, U, R> Observable<T>.withLatestFrom(
         emitter.setDisposable(disposables)
 
         val otherSources = others.toList()
-        val otherValues = atomicList<Any?>(List(otherSources.size) { Uninitialized })
+        val otherValues = atomic<List<Any?>>(List(otherSources.size) { Uninitialized })
 
         otherSources.forEachIndexed { index, source ->
             source.subscribe(
@@ -30,7 +31,7 @@ fun <T, U, R> Observable<T>.withLatestFrom(
                     }
 
                     override fun onNext(value: U) {
-                        otherValues.update {
+                        otherValues.change {
                             it.replace(index, value)
                         }
                     }

@@ -26,7 +26,7 @@ internal class SchedulerImpl(
     ) : Scheduler.Executor {
 
         private val looperThread = looperThreadStrategy.get()
-        private val _isDisposed = AtomicInt(0)
+        private val _isDisposed = atomic(0)
         override val isDisposed: Boolean get() = _isDisposed.value != 0
 
         init {

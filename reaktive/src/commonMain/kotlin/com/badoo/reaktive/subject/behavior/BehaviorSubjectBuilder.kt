@@ -2,13 +2,14 @@ package com.badoo.reaktive.subject.behavior
 
 import com.badoo.reaktive.observable.ObservableObserver
 import com.badoo.reaktive.subject.DefaultSubject
-import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.value
 
 @Suppress("FunctionName")
 fun <T> BehaviorSubject(initialValue: T): BehaviorSubject<T> =
     object : DefaultSubject<T>(), BehaviorSubject<T> {
         @Suppress("ObjectPropertyName")
-        private val _value = AtomicReference(initialValue)
+        private val _value = atomic(initialValue)
         override val value: T get() = _value.value
 
         override fun onAfterSubscribe(observer: ObservableObserver<T>) {

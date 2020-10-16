@@ -2,7 +2,7 @@ package com.badoo.reaktive.scheduler
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.RefCounter
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
 import com.badoo.reaktive.utils.lock.Lock
 import com.badoo.reaktive.utils.lock.synchronized
 import com.badoo.reaktive.utils.queue.LinkedFreezableQueue

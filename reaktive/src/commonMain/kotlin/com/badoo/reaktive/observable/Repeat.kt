@@ -3,14 +3,16 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.base.ErrorCallback
 import com.badoo.reaktive.base.ValueCallback
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import com.badoo.reaktive.utils.atomics.AtomicInt
+import com.badoo.reaktive.utils.atomics.addAndGet
+import com.badoo.reaktive.utils.atomics.atomic
 import com.badoo.reaktive.utils.serializer.serializer
 
 fun <T> Observable<T>.repeat(count: Int = -1): Observable<T> =
     observable { emitter ->
         val observer =
             object : ObservableObserver<T>, ValueCallback<T> by emitter, ErrorCallback by emitter {
-                private val counter: AtomicInt? = if (count >= 0) AtomicInt(count) else null
+                private val counter: AtomicInt? = if (count >= 0) atomic(count) else null
 
                 // Prevents recursive subscriptions
                 private val serializer =

@@ -9,19 +9,19 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.ObservableObserver
 import com.badoo.reaktive.subject.Subject
 import com.badoo.reaktive.subject.getObserver
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import com.badoo.reaktive.utils.atomic.update
-import com.badoo.reaktive.utils.atomic.updateAndGet
+import com.badoo.reaktive.utils.atomics.atomic
+import com.badoo.reaktive.utils.atomics.change
+import com.badoo.reaktive.utils.atomics.changeAndGet
 
 internal fun <T> Observable<T>.publish(subjectFactory: () -> Subject<T>): ConnectableObservable<T> =
     object : ConnectableObservable<T> {
-        private val state = AtomicReference<PublishState<T>?>(null)
+        private val state = atomic<PublishState<T>?>(null)
 
         override fun connect(onConnect: ((Disposable) -> Unit)?) {
             var oldState: PublishState<T>? = null
 
             val newState: PublishState.Connected<T> =
-                state.updateAndGet {
+                state.changeAndGet {
                     oldState = it
                     it.ensureConnected()
                 }
@@ -52,7 +52,7 @@ internal fun <T> Observable<T>.publish(subjectFactory: () -> Subject<T>): Connec
 
             disposables +=
                 Disposable {
-                    state.update { oldState ->
+                    state.change { oldState ->
                         oldState
                             ?.takeIf { it.subject === subject }
                             ?.let { PublishState.Disconnected(it.subject) }
@@ -64,7 +64,7 @@ internal fun <T> Observable<T>.publish(subjectFactory: () -> Subject<T>): Connec
 
         override fun subscribe(observer: ObservableObserver<T>) {
             state
-                .updateAndGet<PublishState<T>?, PublishState<T>> {
+                .changeAndGet<PublishState<T>?, PublishState<T>> {
                     when (it) {
                         is PublishState.NotConnected,
                         is PublishState.Connected -> it

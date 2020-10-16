@@ -1,7 +1,7 @@
 package com.badoo.reaktive.test
 
 import com.badoo.reaktive.utils.lock.Lock
-import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import com.badoo.reaktive.utils.atomics.AtomicBoolean
 import com.badoo.reaktive.utils.lock.synchronized
 
 internal expect fun doInBackground(block: () -> Unit)
