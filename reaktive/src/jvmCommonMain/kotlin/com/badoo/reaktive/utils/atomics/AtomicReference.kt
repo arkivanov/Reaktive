@@ -13,5 +13,4 @@ internal actual fun <T> AtomicReference<T>.setValue(value: T) {
 internal actual fun <T> AtomicReference<T>.compareAndSet(expectedValue: T, newValue: T): Boolean =
     this.compareAndSet(expectedValue, newValue)
 
-internal actual fun <T> atomic(initialValue: T): AtomicReference<T> =
-    java.util.concurrent.atomic.AtomicReference<T>(initialValue)
+internal actual fun <T> atomic(initialValue: T): AtomicReference<T> = AtomicReference<T>(initialValue)
