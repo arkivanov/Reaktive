@@ -3,8 +3,10 @@ package com.badoo.reaktive.maybe
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.utils.PairReference
 import com.badoo.reaktive.utils.Uninitialized
-import com.badoo.reaktive.utils.lock.synchronized
-import com.badoo.reaktive.utils.lock.withLockAndCondition
+import com.badoo.reaktive.utils.locks.await
+import com.badoo.reaktive.utils.locks.signal
+import com.badoo.reaktive.utils.locks.synchronized
+import com.badoo.reaktive.utils.locks.withLockAndCondition
 
 fun <T> Maybe<T>.blockingGet(): T? =
     withLockAndCondition { lock, condition ->

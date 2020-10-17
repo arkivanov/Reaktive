@@ -21,7 +21,7 @@ jmh {
     timeUnit = 'ms'
     fork = 1
     warmup = '2s'
-    warmupIterations = 5
+    warmupIterations = 30
     timeOnIteration = '2s'
-    iterations = 5
+    iterations = 30
 }
