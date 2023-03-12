@@ -3,7 +3,6 @@ package com.badoo.reaktive.maybe
 import com.badoo.reaktive.annotations.ExperimentalReaktiveApi
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.plugin.onAssembleMaybe
-import kotlin.native.concurrent.SharedImmutable
 
 /**
  * ⚠️ Advanced use only: creates an instance of [Maybe] without any safeguards by calling `onSubscribe` with a [MaybeObserver].
@@ -82,7 +81,6 @@ fun <T> maybeOfError(error: Throwable): Maybe<T> =
  */
 fun <T> Throwable.toMaybeOfError(): Maybe<T> = maybeOfError(this)
 
-@SharedImmutable
 private val maybeOfEmpty by lazy {
     maybeUnsafe<Nothing> { observer ->
         val disposable = Disposable()
@@ -101,7 +99,6 @@ private val maybeOfEmpty by lazy {
  */
 fun <T> maybeOfEmpty(): Maybe<T> = maybeOfEmpty
 
-@SharedImmutable
 private val maybeOfNever by lazy {
     maybeUnsafe<Nothing> { observer ->
         observer.onSubscribe(Disposable())
