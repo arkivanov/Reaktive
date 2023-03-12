@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-expect class AtomicBoolean(initialValue: Boolean = false) {
+expect open class AtomicBoolean(initialValue: Boolean = false) {
 
     var value: Boolean
 

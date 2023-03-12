@@ -1,17 +1,15 @@
 package com.badoo.reaktive.utils.atomic
 
-actual class AtomicInt actual constructor(initialValue: Int) {
-
-    private val delegate = java.util.concurrent.atomic.AtomicInteger(initialValue)
+actual open class AtomicInt actual constructor(initialValue: Int) : java.util.concurrent.atomic.AtomicInteger(initialValue) {
 
     actual var value: Int
-        get() = delegate.get()
+        get() = get()
         set(value) {
-            delegate.set(value)
+            set(value)
         }
 
-    actual fun addAndGet(delta: Int): Int = delegate.addAndGet(delta)
-
-    actual fun compareAndSet(expectedValue: Int, newValue: Int): Boolean =
-        delegate.compareAndSet(expectedValue, newValue)
+    // See KT-16087
+    override fun toByte(): Byte = value.toByte()
+    override fun toChar(): Char = value.toChar()
+    override fun toShort(): Short = value.toShort()
 }

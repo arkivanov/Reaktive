@@ -1,17 +1,15 @@
 package com.badoo.reaktive.utils.atomic
 
-actual class AtomicLong actual constructor(initialValue: Long) {
-
-    private val delegate = java.util.concurrent.atomic.AtomicLong(initialValue)
+actual open class AtomicLong actual constructor(initialValue: Long) : java.util.concurrent.atomic.AtomicLong(initialValue) {
 
     actual var value: Long
-        get() = delegate.get()
+        get() = get()
         set(value) {
-            delegate.set(value)
+            set(value)
         }
 
-    actual fun addAndGet(delta: Long): Long = delegate.addAndGet(delta)
-
-    actual fun compareAndSet(expectedValue: Long, newValue: Long): Boolean =
-        delegate.compareAndSet(expectedValue, newValue)
+    // See KT-16087
+    override fun toByte(): Byte = value.toByte()
+    override fun toChar(): Char = value.toChar()
+    override fun toShort(): Short = value.toShort()
 }

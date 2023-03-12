@@ -6,7 +6,7 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.utils.atomic.AtomicList
-import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomic.change
 import com.badoo.reaktive.utils.replace
 import com.badoo.reaktive.utils.serializer.serializer
 
@@ -70,7 +70,7 @@ fun <T, R> Iterable<Observable<T>>.zip(mapper: (List<T>) -> R): Observable<R> =
                     }
 
                     is ZipEvent.OnComplete -> {
-                        completed.update {
+                        completed.change {
                             it.replace(event.index, true)
                         }
 

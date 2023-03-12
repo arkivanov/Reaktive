@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-expect class AtomicInt(initialValue: Int = 0) {
+expect open class AtomicInt(initialValue: Int = 0) {
 
     var value: Int
 

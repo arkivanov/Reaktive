@@ -1,6 +1,6 @@
 package com.badoo.reaktive.utils.atomic
 
-expect class AtomicLong(initialValue: Long = 0L) {
+expect open class AtomicLong(initialValue: Long = 0L) {
 
     var value: Long
 

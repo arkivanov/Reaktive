@@ -8,7 +8,7 @@ internal typealias AtomicList<T> = AtomicReference<List<T>>
 internal fun <T> atomicList(initialList: List<T> = emptyList()): AtomicList<T> = AtomicList(initialList)
 
 internal fun <T> AtomicList<T>.add(element: T) {
-    update { it + element }
+    change { it + element }
 }
 
 internal operator fun <T> AtomicList<T>.plusAssign(element: T) {
@@ -16,18 +16,18 @@ internal operator fun <T> AtomicList<T>.plusAssign(element: T) {
 }
 
 internal fun <T> AtomicList<T>.add(index: Int, element: T) {
-    update { it.insert(index, element) }
+    change { it.insert(index, element) }
 }
 
 internal fun <T> AtomicList<T>.removeAt(index: Int): T =
-    getAndUpdate {
+    getAndChange {
         it.filterIndexed { i, _ -> i != index }
     }[index]
 
 internal fun <T> AtomicList<T>.remove(element: T): Boolean {
     var removed = false
 
-    update {
+    change {
         val newList = it - element
         removed = newList.size < it.size
         newList
@@ -41,13 +41,13 @@ internal operator fun <T> AtomicList<T>.minusAssign(element: T) {
 }
 
 internal fun <T> AtomicList<T>.clear() {
-    update { emptyList() }
+    change { emptyList() }
 }
 
 internal operator fun <T> AtomicList<T>.get(index: Int): T = value[index]
 
 internal operator fun <T> AtomicList<T>.set(index: Int, element: T): T =
-    getAndUpdate {
+    getAndChange {
         it.replace(index, element)
     }[index]
 

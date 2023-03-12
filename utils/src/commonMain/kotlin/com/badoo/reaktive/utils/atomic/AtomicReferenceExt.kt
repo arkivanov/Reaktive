@@ -2,9 +2,7 @@ package com.badoo.reaktive.utils.atomic
 
 import kotlin.reflect.KProperty
 
-fun <T> AtomicReference<T>.getAndSet(value: T): T = getAndUpdate { value }
-
-inline fun <T> AtomicReference<T>.getAndUpdate(update: (T) -> T): T {
+inline fun <T> AtomicReference<T>.getAndChange(update: (T) -> T): T {
     var prev: T
     do {
         prev = value
@@ -13,7 +11,7 @@ inline fun <T> AtomicReference<T>.getAndUpdate(update: (T) -> T): T {
     return prev
 }
 
-inline fun <T, R : T> AtomicReference<T>.updateAndGet(update: (T) -> R): R {
+inline fun <T, R : T> AtomicReference<T>.changeAndGet(update: (T) -> R): R {
     var next: R
     do {
         val prev = value
@@ -23,8 +21,8 @@ inline fun <T, R : T> AtomicReference<T>.updateAndGet(update: (T) -> R): R {
     return next
 }
 
-inline fun <T> AtomicReference<T>.update(update: (T) -> T) {
-    getAndUpdate(update)
+inline fun <T> AtomicReference<T>.change(update: (T) -> T) {
+    getAndChange(update)
 }
 
 operator fun <T> AtomicReference<T>.getValue(thisRef: Any?, property: KProperty<*>): T = value
