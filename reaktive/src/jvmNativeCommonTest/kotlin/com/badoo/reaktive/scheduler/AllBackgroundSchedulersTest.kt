@@ -36,7 +36,7 @@ class AllBackgroundSchedulersTest {
         val executors = List(EXECUTOR_COUNT) { scheduler.newExecutor() }
 
         val counter = AtomicInt()
-        var isFinished by AtomicBoolean()
+        var isFinished = false
         val lock = Lock()
         val condition = lock.newCondition()
 

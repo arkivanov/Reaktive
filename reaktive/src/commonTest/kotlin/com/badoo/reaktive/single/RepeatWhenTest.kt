@@ -14,9 +14,7 @@ import com.badoo.reaktive.test.observable.test
 import com.badoo.reaktive.test.single.TestSingle
 import com.badoo.reaktive.utils.atomic.AtomicInt
 import com.badoo.reaktive.utils.atomic.atomicList
-import com.badoo.reaktive.utils.atomic.getValue
 import com.badoo.reaktive.utils.atomic.plusAssign
-import com.badoo.reaktive.utils.atomic.setValue
 import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -185,7 +183,7 @@ class RepeatWhenTest : SingleToObservableTests by SingleToObservableTestsImpl({ 
     @Test
     fun predicate_receives_valid_attempt_WHEN_upstream_completes() {
         val upstream = TestObservable<Int?>()
-        var attemptVar by AtomicInt()
+        var attemptVar = 0
 
         upstream
             .repeatWhen { attempt ->

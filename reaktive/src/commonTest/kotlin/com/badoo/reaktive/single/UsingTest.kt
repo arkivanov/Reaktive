@@ -39,7 +39,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_upstream_disposed_WHEN_eager_true_and_downstream_disposed() {
-        var isResourceDisposedBeforeUpstreamDisposed by AtomicBoolean()
+        var isResourceDisposedBeforeUpstreamDisposed = false
         val observer =
             singleUsing(eager = true) { resource ->
                 singleUnsafe { observer ->
@@ -55,7 +55,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_upstream_disposed_WHEN_eager_false_and_downstream_disposed() {
-        var isResourceDisposedBeforeUpstreamDisposed by AtomicBoolean()
+        var isResourceDisposedBeforeUpstreamDisposed = false
 
         val observer =
             singleUsing(eager = false) { resource ->
@@ -72,7 +72,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_downstream_signalled_onSuccess_WHEN_eager_true_and_upstream_succeeded() {
-        var isResourceDisposedBeforeDownstreamOnSuccess by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnSuccess = false
         val upstream = TestSingle<Int>()
 
         singleUsing(eager = true, sourceSupplier = { upstream }).subscribe(
@@ -91,7 +91,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_downstream_signalled_onError_WHEN_eager_true_and_upstream_produced_error() {
-        var isResourceDisposedBeforeDownstreamOnError by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnError = false
         val upstream = TestSingle<Int>()
 
         singleUsing(eager = true, sourceSupplier = { upstream }).subscribe(
@@ -110,7 +110,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_downstream_signalled_onSuccess_WHEN_eager_false_and_upstream_succeeded() {
-        var isResourceDisposedBeforeDownstreamOnSuccess by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnSuccess = false
         val upstream = TestSingle<Int>()
 
         singleUsing(eager = false, sourceSupplier = { upstream }).subscribe(
@@ -129,7 +129,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_downstream_signalled_onError_WHEN_eager_false_and_upstream_produced_error() {
-        var isResourceDisposedBeforeDownstreamOnError by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnError = false
         val upstream = TestSingle<Int>()
 
         singleUsing(eager = false, sourceSupplier = { upstream }).subscribe(

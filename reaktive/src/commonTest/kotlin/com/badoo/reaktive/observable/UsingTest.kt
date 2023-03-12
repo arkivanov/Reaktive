@@ -42,7 +42,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_upstream_disposed_WHEN_eager_true_and_downstream_disposed() {
-        var isResourceDisposedBeforeUpstreamDisposed by AtomicBoolean()
+        var isResourceDisposedBeforeUpstreamDisposed = false
         val observer =
             observableUsing(eager = true) { resource ->
                 observableUnsafe { observer ->
@@ -58,7 +58,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_upstream_disposed_WHEN_eager_false_and_downstream_disposed() {
-        var isResourceDisposedBeforeUpstreamDisposed by AtomicBoolean()
+        var isResourceDisposedBeforeUpstreamDisposed = false
 
         val observer =
             observableUsing(eager = false) { resource ->
@@ -75,7 +75,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_downstream_signalled_onComplete_WHEN_eager_true_and_upstream_completed() {
-        var isResourceDisposedBeforeDownstreamOnComplete by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnComplete = false
         val upstream = TestObservable<Int>()
 
         observableUsing(eager = true, sourceSupplier = { upstream }).subscribe(
@@ -94,7 +94,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_before_downstream_signalled_onError_WHEN_eager_true_and_upstream_produced_error() {
-        var isResourceDisposedBeforeDownstreamOnError by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnError = false
         val upstream = TestObservable<Int>()
 
         observableUsing(eager = true, sourceSupplier = { upstream }).subscribe(
@@ -113,7 +113,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_downstream_signalled_onComplete_WHEN_eager_false_and_upstream_completed() {
-        var isResourceDisposedBeforeDownstreamOnComplete by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnComplete = false
         val upstream = TestObservable<Int>()
 
         observableUsing(eager = false, sourceSupplier = { upstream }).subscribe(
@@ -132,7 +132,7 @@ class UsingTest :
 
     @Test
     fun disposes_resource_after_downstream_signalled_onError_WHEN_eager_false_and_upstream_produced_error() {
-        var isResourceDisposedBeforeDownstreamOnError by AtomicBoolean()
+        var isResourceDisposedBeforeDownstreamOnError = false
         val upstream = TestObservable<Int>()
 
         observableUsing(eager = false, sourceSupplier = { upstream }).subscribe(
