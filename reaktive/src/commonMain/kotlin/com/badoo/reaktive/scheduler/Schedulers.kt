@@ -1,61 +1,52 @@
 package com.badoo.reaktive.scheduler
 
-import com.badoo.reaktive.utils.atomic.AtomicReference
-import kotlin.native.concurrent.SharedImmutable
-
 /**
  * Provides the global instance of Main [Scheduler]
  */
-val mainScheduler: Scheduler get() = mainSchedulerFactory.value.value
+val mainScheduler: Scheduler get() = mainSchedulerFactory.value
 
 /**
  * Provides the global instance of Computation [Scheduler]
  */
-val computationScheduler: Scheduler get() = computationSchedulerFactory.value.value
+val computationScheduler: Scheduler get() = computationSchedulerFactory.value
 
 /**
  * Provides the global instance of IO [Scheduler]
  */
-val ioScheduler: Scheduler get() = ioSchedulerFactory.value.value
+val ioScheduler: Scheduler get() = ioSchedulerFactory.value
 
 /**
  * Provides the global instance of Trampoline [Scheduler]
  */
-val trampolineScheduler: Scheduler get() = trampolineSchedulerFactory.value.value
+val trampolineScheduler: Scheduler get() = trampolineSchedulerFactory.value
 
 /**
  * Provides the global instance of Single [Scheduler]
  */
-val singleScheduler: Scheduler get() = singleSchedulerFactory.value.value
+val singleScheduler: Scheduler get() = singleSchedulerFactory.value
 
 /**
  * Provides the global instance of New Thread [Scheduler]
  */
-val newThreadScheduler: Scheduler get() = newThreadSchedulerFactory.value.value
+val newThreadScheduler: Scheduler get() = newThreadSchedulerFactory.value
 
-@SharedImmutable
-private val mainSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createMainScheduler))
+private var mainSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createMainScheduler)
 
-@SharedImmutable
-private val computationSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createComputationScheduler))
+private var computationSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createComputationScheduler)
 
-@SharedImmutable
-private val ioSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createIoScheduler))
+private var ioSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createIoScheduler)
 
-@SharedImmutable
-private val trampolineSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createTrampolineScheduler))
+private var trampolineSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createTrampolineScheduler)
 
-@SharedImmutable
-private val singleSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createSingleScheduler))
+private var singleSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createSingleScheduler)
 
-@SharedImmutable
-private val newThreadSchedulerFactory: AtomicReference<Lazy<Scheduler>> =
-    AtomicReference(lazy(::createNewThreadScheduler))
+private var newThreadSchedulerFactory: Lazy<Scheduler> =
+    lazy(::createNewThreadScheduler)
 
 /**
  * Creates a new instance of Main [Scheduler]
@@ -105,10 +96,10 @@ fun overrideSchedulers(
     single: () -> Scheduler = ::createSingleScheduler,
     newThread: () -> Scheduler = ::createNewThreadScheduler
 ) {
-    mainSchedulerFactory.value = lazy(main)
-    computationSchedulerFactory.value = lazy(computation)
-    ioSchedulerFactory.value = lazy(io)
-    trampolineSchedulerFactory.value = lazy(trampoline)
-    singleSchedulerFactory.value = lazy(single)
-    newThreadSchedulerFactory.value = lazy(newThread)
+    mainSchedulerFactory = lazy(main)
+    computationSchedulerFactory = lazy(computation)
+    ioSchedulerFactory = lazy(io)
+    trampolineSchedulerFactory = lazy(trampoline)
+    singleSchedulerFactory = lazy(single)
+    newThreadSchedulerFactory = lazy(newThread)
 }
