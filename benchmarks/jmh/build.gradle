@@ -11,11 +11,13 @@ dependencies {
 }
 
 jmh {
+    excludes = ["RxJava", "Flow"]
+    includes = ["Scrabble"]
     benchmarkMode = ['avgt']
     timeUnit = 'ms'
     fork = 1
     warmup = '2s'
-    warmupIterations = 8
+    warmupIterations = 4
     timeOnIteration = '2s'
-    iterations = 10
+    iterations = 4
 }

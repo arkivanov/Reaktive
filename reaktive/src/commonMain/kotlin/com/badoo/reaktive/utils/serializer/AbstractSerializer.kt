@@ -1,15 +1,13 @@
 package com.badoo.reaktive.utils.serializer
 
 import com.badoo.reaktive.utils.SynchronizedObject
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.changeAndGet
 
 /*
  * Derived from RxJava SerializedEmitter.
  */
 internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer<T> {
 
-    private val counter = AtomicInt()
+    private var isDraining = false
 
     protected abstract fun addLast(value: T)
 
@@ -22,30 +20,18 @@ internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer
     protected abstract fun onValue(value: T): Boolean
 
     override fun accept(value: T) {
-        if (counter.compareAndSet(0, 1)) {
-            if (!onValue(value)) {
-                counter.value = -1
-                return
-            }
-
-            if (counter.addAndGet(-1) == 0) {
-                return
-            }
-        } else {
-            if (counter.value < 0) {
-                return
-            }
-
-            synchronized {
+        synchronized {
+            if (isDraining) {
                 addLast(value)
-            }
-
-            if (counter.changeAndGet { if (it >= 0) it + 1 else it } != 1) {
                 return
             }
+
+            isDraining = true
         }
 
-        drainLoop()
+        if (onValue(value)) {
+            drainLoop()
+        }
     }
 
     override fun clear() {
@@ -53,33 +39,19 @@ internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer
     }
 
     private fun drainLoop() {
-        var missed = 1
         while (true) {
-            while (true) {
-                var isEmpty = false
-                var value: T? = null
-
+            val item =
                 synchronized {
-                    isEmpty = isEmpty()
-                    if (!isEmpty) {
-                        value = removeFirst()
+                    if (isEmpty()) {
+                        isDraining = false
+                        return
                     }
+
+                    removeFirst()
                 }
 
-                if (isEmpty) {
-                    break
-                }
-
-                @Suppress("UNCHECKED_CAST")
-                if (!onValue(value as T)) {
-                    counter.value = -1
-                    return
-                }
-            }
-
-            missed = counter.addAndGet(-missed)
-            if (missed == 0) {
-                break
+            if (!onValue(item)) {
+                return
             }
         }
     }
