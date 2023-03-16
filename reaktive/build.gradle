@@ -2,6 +2,7 @@ plugins {
     id 'mpp-configuration'
     id 'publish-configuration'
     id 'detekt-configuration'
+    id 'kotlinx-atomicfu'
 }
 
 kotlin {

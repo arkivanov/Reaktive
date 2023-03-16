@@ -7,6 +7,7 @@ import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.atomic.AtomicLong
 import com.badoo.reaktive.utils.clock.Clock
 import com.badoo.reaktive.utils.clock.DefaultClock
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 internal class TrampolineScheduler(

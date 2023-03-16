@@ -6,10 +6,15 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.minusAssign
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.SerializedObservableCallbacks
 import com.badoo.reaktive.observable.observable
 import com.badoo.reaktive.observable.serialize
 import com.badoo.reaktive.single.Single
-import com.badoo.reaktive.utils.atomic.AtomicInt
+import kotlinx.atomicfu.atomic
+
+private class ActiveSourceCount {
+    val value = atomic(1)
+}
 
 /**
  * Merges multiple [Maybe]s into one [Observable], running all [Maybe]s simultaneously.
@@ -20,11 +25,11 @@ fun <T> Iterable<Maybe<T>>.merge(): Observable<T> =
     observable { emitter ->
         val disposables = CompositeDisposable()
         emitter.setDisposable(disposables)
-        val serializedEmitter = emitter.serialize()
-        val activeSourceCount = AtomicInt(1)
+        val serializedEmitter = SerializedObservableCallbacks(emitter)
+        val activeSourceCount = ActiveSourceCount()
 
         forEach { upstream ->
-            activeSourceCount.addAndGet(1)
+            activeSourceCount.value.addAndGet(1)
             upstream.subscribe(
                 object : MaybeObserver<T>, ErrorCallback by serializedEmitter {
                     private var disposableRef: Disposable? = null
@@ -41,7 +46,7 @@ fun <T> Iterable<Maybe<T>>.merge(): Observable<T> =
 
                     override fun onComplete() {
                         disposables -= requireNotNull(disposableRef)
-                        if (activeSourceCount.addAndGet(-1) == 0) {
+                        if (activeSourceCount.value.addAndGet(-1) == 0) {
                             emitter.onComplete()
                         }
                     }
@@ -49,7 +54,7 @@ fun <T> Iterable<Maybe<T>>.merge(): Observable<T> =
             )
         }
 
-        if (activeSourceCount.addAndGet(-1) == 0) {
+        if (activeSourceCount.value.addAndGet(-1) == 0) {
             emitter.onComplete()
         }
     }

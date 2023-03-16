@@ -1,6 +1,5 @@
 package com.badoo.reaktive.maybe
 
-import com.badoo.reaktive.base.Observer
 import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
@@ -14,17 +13,21 @@ import com.badoo.reaktive.disposable.Disposable
 fun <T, R> Maybe<T>.flatMap(mapper: (T) -> Maybe<R>): Maybe<R> =
     maybe { emitter ->
         subscribe(
-            object : MaybeObserver<T>, CompletableCallbacks by emitter {
+            object : MaybeObserver<Any?>, CompletableCallbacks by emitter {
+                private var isUpstreamSucceeded = false
+
                 override fun onSubscribe(disposable: Disposable) {
                     emitter.setDisposable(disposable)
                 }
 
-                override fun onSuccess(value: T) {
-                    emitter.tryCatch {
-                        mapper(value).subscribe(
-                            object : MaybeObserver<R>, Observer by this, MaybeCallbacks<R> by emitter {
-                            }
-                        )
+                override fun onSuccess(value: Any?) {
+                    if (!isUpstreamSucceeded) {
+                        isUpstreamSucceeded = true
+                        emitter.tryCatch {
+                            mapper(value as T).subscribe(this)
+                        }
+                    } else {
+                        emitter.onSuccess(value as R)
                     }
                 }
             }

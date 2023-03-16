@@ -51,7 +51,7 @@ actual open class CompositeDisposable actual constructor() : Disposable {
         var result = collection
 
         if (result == null) {
-            result = ArrayList()
+            result = ArrayList(4)
             collection = result
         } else if (result.size >= SIZE_THRESHOLD_FOR_HASH_SET) {
             result = LinkedHashSet(result)

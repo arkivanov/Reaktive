@@ -6,9 +6,9 @@ import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.addTo
-import com.badoo.reaktive.utils.atomic.AtomicInt
 import com.badoo.reaktive.utils.lock.Lock
 import com.badoo.reaktive.utils.lock.synchronized
+import kotlinx.atomicfu.atomic
 
 /**
  * Calls the [mapper] for each element emitted by the [Observable] and subscribes to the returned inner [Observable].
@@ -23,7 +23,7 @@ fun <T, R> Observable<T>.flatMap(maxConcurrency: Int = Int.MAX_VALUE, mapper: (T
     require(maxConcurrency > 0) { "maxConcurrency value must be positive" }
 
     return observable { emitter ->
-        val upstreamObserver = FlatMapObserver(emitter.serialize(), maxConcurrency, mapper)
+        val upstreamObserver = FlatMapObserver(SerializedObservableCallbacks(emitter), maxConcurrency, mapper)
         emitter.setDisposable(upstreamObserver)
         subscribe(upstreamObserver)
     }
@@ -54,7 +54,7 @@ private class FlatMapObserver<in T, in R>(
     private val mapper: (T) -> Observable<R>
 ) : CompositeDisposable(), ObservableObserver<T>, ErrorCallback by callbacks {
 
-    private val activeSourceCount = AtomicInt(1)
+    private val activeSourceCount = atomic(1)
 
     private val queue: FlatMapQueue<Observable<R>>? =
         maxConcurrency

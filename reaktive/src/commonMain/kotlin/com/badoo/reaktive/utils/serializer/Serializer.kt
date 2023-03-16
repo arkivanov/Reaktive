@@ -4,7 +4,7 @@ package com.badoo.reaktive.utils.serializer
  * Serializes all calls to [Serializer.accept] method.
  * Each implementation should normally have a callback which should be synchronously called with corresponding values.
  */
-internal interface Serializer<in T> {
+internal interface Serializer<in T, in S> {
 
     /**
      * Either calls "onValue" with the specified value or queues the value.
@@ -14,10 +14,14 @@ internal interface Serializer<in T> {
      *
      * @param value the value
      */
-    fun accept(value: T)
+    fun accept(value: T, token: S)
 
     /**
      * Clears the queue
      */
     fun clear()
+}
+
+internal fun <T> Serializer<T, Nothing?>.accept(value: T) {
+    accept(value = value, token = null)
 }

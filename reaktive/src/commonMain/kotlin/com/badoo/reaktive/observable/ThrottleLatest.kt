@@ -12,6 +12,7 @@ import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.Uninitialized
 import com.badoo.reaktive.utils.serializer.Serializer
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 /**
@@ -138,7 +139,7 @@ private class ThrottleLatest<T>(
     }
 
     private open class AbstractObserver(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : Observer, ErrorCallback, SerialDisposable() {
         override fun onSubscribe(disposable: Disposable) {
             set(disposable)
@@ -150,7 +151,7 @@ private class ThrottleLatest<T>(
     }
 
     private class UpstreamObserver<T>(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : ObservableObserver<T>, AbstractObserver(actor) {
         override fun onNext(value: T) {
             actor.accept(value)
@@ -162,7 +163,7 @@ private class ThrottleLatest<T>(
     }
 
     private class TimeoutObserver(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : CompletableObserver, AbstractObserver(actor) {
         override fun onComplete() {
             actor.accept(Event.Timeout)

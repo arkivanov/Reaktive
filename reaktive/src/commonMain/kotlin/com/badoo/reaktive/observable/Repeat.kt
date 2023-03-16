@@ -3,6 +3,7 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.base.ErrorCallback
 import com.badoo.reaktive.base.ValueCallback
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 /**

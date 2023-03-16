@@ -10,6 +10,7 @@ import com.badoo.reaktive.single.singleOf
 import com.badoo.reaktive.subject.unicast.UnicastSubject
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.serializer.Serializer
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 /**
@@ -185,7 +186,7 @@ private class WindowByBoundary<T>(
     }
 
     private class UpstreamObserver<in T>(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : ObservableObserver<T>, SerialDisposable() {
         override fun onSubscribe(disposable: Disposable) {
             set(disposable)
@@ -205,7 +206,7 @@ private class WindowByBoundary<T>(
     }
 
     private class BoundaryObserver(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : ObservableObserver<Any?>, SerialDisposable() {
         override fun onSubscribe(disposable: Disposable) {
             set(disposable)

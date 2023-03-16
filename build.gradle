@@ -1,6 +1,10 @@
 buildscript {
     ext.reaktive_version = '1.2.3'
     ext.reaktive_group_id = 'com.badoo.reaktive'
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.20.0")
+    }
 }
 
 plugins {

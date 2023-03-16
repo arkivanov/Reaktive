@@ -1,28 +1,43 @@
 package com.badoo.reaktive.utils.serializer
 
+internal inline fun <T, S> serializer(
+    crossinline onValue: (value: T, token: S) -> Boolean,
+): Serializer<T, S> =
+    object : DefaultSerializer<T, S>() {
+        override fun onValue(value: T, token: S): Boolean =
+            onValue.invoke(value, token)
+    }
+
 internal inline fun <T> serializer(
-    crossinline onValue: (T) -> Boolean,
-): Serializer<T> =
-    object : DefaultSerializer<T>() {
-        override fun onValue(value: T): Boolean =
+    crossinline onValue: (value: T) -> Boolean,
+): Serializer<T, Nothing?> =
+    object : DefaultSerializer<T, Nothing?>() {
+        override fun onValue(value: T, token: Nothing?): Boolean =
             onValue.invoke(value)
     }
 
-internal abstract class DefaultSerializer<T> : AbstractSerializer<T>() {
-    private var queue: ArrayDeque<T>? = null
+internal abstract class DefaultSerializer<T, S> : AbstractSerializer<T, S>() {
+    private var values: ArrayDeque<T>? = null
+    private var tokens: ArrayDeque<S>? = null
 
-    override fun addLast(value: T) {
-        val queue = queue ?: ArrayDeque<T>().also { queue = it }
-        queue.add(value)
+    override fun addLast(value: T, token: S) {
+        val values = values ?: ArrayDeque<T>().also { values = it }
+        val tokens = tokens ?: ArrayDeque<S>().also { tokens = it }
+        values.add(value)
+        tokens.add(token)
     }
 
     override fun clearQueue() {
-        queue?.clear()
+        values?.clear()
+        tokens?.clear()
     }
 
     override fun isEmpty(): Boolean =
-        queue?.isEmpty() ?: true
+        values?.isEmpty() ?: true
 
-    override fun removeFirst(): T =
-        requireNotNull(queue).removeFirst()
+    override fun removeFirstValue(): T =
+        requireNotNull(values).removeFirst()
+
+    override fun removeFirstToken(): S =
+        requireNotNull(tokens).removeFirst()
 }

@@ -1,29 +1,31 @@
 package com.badoo.reaktive.utils.serializer
 
 import com.badoo.reaktive.utils.SynchronizedObject
-import com.badoo.reaktive.utils.atomic.AtomicInt
-import com.badoo.reaktive.utils.atomic.updateAndGet
+import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.updateAndGet
 
 /*
  * Derived from RxJava SerializedEmitter.
  */
-internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer<T> {
+internal abstract class AbstractSerializer<T, S> : SynchronizedObject(), Serializer<T, S> {
 
-    private val counter = AtomicInt()
+    private val counter = atomic(0)
 
-    protected abstract fun addLast(value: T)
+    protected abstract fun addLast(value: T, token: S)
 
     protected abstract fun clearQueue()
 
     protected abstract fun isEmpty(): Boolean
 
-    protected abstract fun removeFirst(): T
+    protected abstract fun removeFirstValue(): T
 
-    protected abstract fun onValue(value: T): Boolean
+    protected abstract fun removeFirstToken(): S
 
-    override fun accept(value: T) {
+    protected abstract fun onValue(value: T, token: S): Boolean
+
+    override fun accept(value: T, token: S) {
         if (counter.compareAndSet(0, 1)) {
-            if (!onValue(value)) {
+            if (!onValue(value, token)) {
                 counter.value = -1
                 return
             }
@@ -37,7 +39,7 @@ internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer
             }
 
             synchronized {
-                addLast(value)
+                addLast(value, token)
             }
 
             if (counter.updateAndGet { if (it >= 0) it + 1 else it } != 1) {
@@ -58,11 +60,13 @@ internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer
             while (true) {
                 var isEmpty = false
                 var value: T? = null
+                var token: S? = null
 
                 synchronized {
                     isEmpty = isEmpty()
                     if (!isEmpty) {
-                        value = removeFirst()
+                        value = removeFirstValue()
+                        token = removeFirstToken()
                     }
                 }
 
@@ -71,7 +75,7 @@ internal abstract class AbstractSerializer<T> : SynchronizedObject(), Serializer
                 }
 
                 @Suppress("UNCHECKED_CAST")
-                if (!onValue(value as T)) {
+                if (!onValue(value as T, token as S)) {
                     counter.value = -1
                     return
                 }

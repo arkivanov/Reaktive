@@ -15,6 +15,7 @@ import com.badoo.reaktive.single.singleOf
 import com.badoo.reaktive.subject.unicast.UnicastSubject
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.serializer.Serializer
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 /**
@@ -243,7 +244,7 @@ private class WindowBySignal<T, S>(
     }
 
     private abstract class AbstractObserver(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : Observer, ErrorCallback, SerialDisposable() {
         private var isCompleted = AtomicBoolean()
 
@@ -263,7 +264,7 @@ private class WindowBySignal<T, S>(
     }
 
     private class UpstreamObserver<in T>(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : AbstractObserver(actor), ObservableObserver<T> {
         override fun onNext(value: T) {
             actor.accept(value)
@@ -275,7 +276,7 @@ private class WindowBySignal<T, S>(
     }
 
     private class OpeningObserver<in S>(
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : AbstractObserver(actor), ObservableObserver<S> {
         override fun onNext(value: S) {
             actor.accept(Event.Open(value))
@@ -287,7 +288,7 @@ private class WindowBySignal<T, S>(
     }
 
     private class ClosingObserver<T>(
-        private val actor: Serializer<Any?>,
+        private val actor: Serializer<Any?, Nothing?>,
         val closing: Completable,
         val subject: UnicastSubject<T>
     ) : AbstractObserver(actor), CompletableObserver {

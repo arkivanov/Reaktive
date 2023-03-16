@@ -8,6 +8,7 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.SerialDisposable
 import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.utils.serializer.Serializer
+import com.badoo.reaktive.utils.serializer.accept
 import com.badoo.reaktive.utils.serializer.serializer
 
 /**
@@ -100,7 +101,7 @@ private class ConcatMapObserver<in T, in R>(
 
     private class InnerObserver<R>(
         private val callbacks: ObservableCallbacks<R>,
-        private val actor: Serializer<Any?>
+        private val actor: Serializer<Any?, Nothing?>
     ) : ObservableObserver<R>, SerialDisposable(), ValueCallback<R> by callbacks, ErrorCallback by callbacks {
         override fun onSubscribe(disposable: Disposable) {
             set(disposable)
