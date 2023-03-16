@@ -1,8 +1,8 @@
 package com.badoo.reaktive.maybe
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.lock.Lock
-import com.badoo.reaktive.utils.lock.synchronized
+import com.badoo.reaktive.utils.CountDownLatch
+import kotlinx.atomicfu.atomic
 
 /**
  * Blocks current thread until the current `Maybe` succeeds with a value (which is returned),
@@ -14,57 +14,41 @@ import com.badoo.reaktive.utils.lock.synchronized
  * from the `reaktive-testing` module.
  */
 fun <T> Maybe<T>.blockingGet(): T? {
-    val lock = Lock()
-    val condition = lock.newCondition()
+    val latch = CountDownLatch(1)
 
     var successResult: T? = null
     var errorResult: Throwable? = null
-    var isFinished = false
-    var disposableRef: Disposable? = null
 
     val observer =
         object : MaybeObserver<T> {
+            val disposableRef = atomic<Disposable?>(null)
+
             override fun onSubscribe(disposable: Disposable) {
-                lock.synchronized {
-                    disposableRef = disposable
-                }
+                disposableRef.value = disposable
             }
 
             override fun onSuccess(value: T) {
-                lock.synchronized {
-                    successResult = value
-                    isFinished = true
-                    condition.signal()
-                }
+                successResult = value
+                latch.countDown()
             }
 
             override fun onComplete() {
-                lock.synchronized {
-                    isFinished = true
-                    condition.signal()
-                }
+                latch.countDown()
             }
 
             override fun onError(error: Throwable) {
-                lock.synchronized {
-                    errorResult = error
-                    isFinished = true
-                    condition.signal()
-                }
+                errorResult = error
+                latch.countDown()
             }
         }
 
     subscribe(observer)
 
-    lock.synchronized {
-        while (!isFinished) {
-            try {
-                condition.await()
-            } catch (e: Throwable) {
-                disposableRef?.dispose()
-                throw e
-            }
-        }
+    try {
+        latch.await()
+    } catch (e: Throwable) {
+        observer.disposableRef.value?.dispose()
+        throw e
     }
 
     errorResult?.also {

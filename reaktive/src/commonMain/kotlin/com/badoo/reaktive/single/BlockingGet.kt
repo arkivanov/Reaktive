@@ -1,8 +1,8 @@
 package com.badoo.reaktive.single
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.utils.lock.Lock
-import com.badoo.reaktive.utils.lock.synchronized
+import com.badoo.reaktive.utils.CountDownLatch
+import kotlinx.atomicfu.atomic
 
 /**
  * Blocks current thread until the current [Single] succeeds with a value (which is returned) or
@@ -16,50 +16,37 @@ import com.badoo.reaktive.utils.lock.synchronized
  * Please refer to the corresponding RxJava [document](http://reactivex.io/RxJava/javadoc/io/reactivex/Single.html#blockingGet--).
  */
 fun <T> Single<T>.blockingGet(): T {
-    val lock = Lock()
-    val condition = lock.newCondition()
+    val latch = CountDownLatch(1)
 
     var successResult: T? = null
     var errorResult: Throwable? = null
-    var isFinished = false
-    var disposableRef: Disposable? = null
 
     val observer =
         object : SingleObserver<T> {
+            val disposableRef = atomic<Disposable?>(null)
+
             override fun onSubscribe(disposable: Disposable) {
-                lock.synchronized {
-                    disposableRef = disposable
-                }
+                disposableRef.value = disposable
             }
 
             override fun onSuccess(value: T) {
-                lock.synchronized {
-                    successResult = value
-                    isFinished = true
-                    condition.signal()
-                }
+                successResult = value
+                latch.countDown()
             }
 
             override fun onError(error: Throwable) {
-                lock.synchronized {
-                    errorResult = error
-                    isFinished = true
-                    condition.signal()
-                }
+                errorResult = error
+                latch.countDown()
             }
         }
 
     subscribe(observer)
 
-    lock.synchronized {
-        while (!isFinished) {
-            try {
-                condition.await()
-            } catch (e: Throwable) {
-                disposableRef?.dispose()
-                throw e
-            }
-        }
+    try {
+        latch.await()
+    } catch (e: Throwable) {
+        observer.disposableRef.value?.dispose()
+        throw e
     }
 
     errorResult?.also {
