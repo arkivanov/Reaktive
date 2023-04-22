@@ -4,11 +4,12 @@ import com.badoo.reaktive.utils.InternalReaktiveApi
 
 @Suppress("EmptyDefaultConstructor")
 @InternalReaktiveApi
-expect class Lock constructor() {
+expect open class Lock() {
 
-    fun acquire()
+    @Suppress("MemberNameEqualsClassName") // Matches java.util.concurrent.locks.ReentrantLock
+    fun lock()
 
-    fun release()
+    fun unlock()
 
     /**
      * Returns a [Condition] instance for use with this `Lock` instance.

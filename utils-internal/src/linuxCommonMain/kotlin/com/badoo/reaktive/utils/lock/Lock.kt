@@ -10,6 +10,7 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import platform.posix.CLOCK_MONOTONIC
+import platform.posix.ETIMEDOUT
 import platform.posix.PTHREAD_MUTEX_RECURSIVE
 import platform.posix.__syscall_slong_t
 import platform.posix.__time_t
@@ -35,9 +36,10 @@ import platform.posix.pthread_mutexattr_settype
 import platform.posix.pthread_mutexattr_t
 import platform.posix.timespec
 import kotlin.native.internal.createCleaner
+import kotlin.system.getTimeNanos
 
 @InternalReaktiveApi
-actual class Lock {
+actual open class Lock {
 
     private val arena = Arena()
     private val attr = arena.alloc<pthread_mutexattr_t>()
@@ -53,11 +55,12 @@ actual class Lock {
         pthread_mutex_init(mutex.ptr, attr.ptr)
     }
 
-    actual fun acquire() {
+    @Suppress("MemberNameEqualsClassName") // Matches expect class
+    actual fun lock() {
         pthread_mutex_lock(mutex.ptr)
     }
 
-    actual fun release() {
+    actual fun unlock() {
         pthread_mutex_unlock(mutex.ptr)
     }
 
@@ -93,19 +96,26 @@ actual class Lock {
             pthread_cond_init(cond.ptr, attr.ptr)
         }
 
-        override fun await(timeoutNanos: Long) {
-            if (timeoutNanos >= 0L) {
-                memScoped {
-                    val ts = alloc<timespec> { clock_gettime(CLOCK_MONOTONIC, ptr) }
-                    ts += timeoutNanos
-                    pthread_cond_timedwait(cond.ptr, lockPtr, ts.ptr)
+        override fun await() {
+            val result = pthread_cond_wait(cond.ptr, lockPtr)
+            check(result == 0) { "Error waiting for condition: $result" }
+        }
+
+        override fun awaitNanos(nanos: Long): Long {
+            memScoped {
+                val ts = alloc<timespec> { clock_gettime(CLOCK_MONOTONIC, ptr) }
+                ts += nanos
+                val startNanos = getTimeNanos()
+
+                return when (val result = pthread_cond_timedwait(cond.ptr, lockPtr, ts.ptr)) {
+                    0 -> startNanos + nanos - getTimeNanos()
+                    ETIMEDOUT -> 0L
+                    else -> error("Error waiting for condition: $result")
                 }
-            } else {
-                pthread_cond_wait(cond.ptr, lockPtr)
             }
         }
 
-        override fun signal() {
+        override fun signalAll() {
             pthread_cond_broadcast(cond.ptr)
         }
 

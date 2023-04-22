@@ -41,7 +41,7 @@ class AllBackgroundSchedulersTest {
             if (counter.addAndGet(1) == TASK_TOTAL_COUNT) {
                 lock.synchronized {
                     isFinished = true
-                    condition.signal()
+                    condition.signalAll()
                 }
             }
         }

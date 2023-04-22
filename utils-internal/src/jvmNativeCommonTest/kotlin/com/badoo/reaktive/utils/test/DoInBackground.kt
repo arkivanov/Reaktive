@@ -16,7 +16,7 @@ fun doInBackgroundBlocking(timeoutNanos: Long = 5_000_000_000L, block: () -> Uni
         block()
         lock.synchronized {
             isFinished = true
-            condition.signal()
+            condition.signalAll()
         }
     }
 

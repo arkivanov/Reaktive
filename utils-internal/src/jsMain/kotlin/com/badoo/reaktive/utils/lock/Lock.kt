@@ -3,13 +3,14 @@ package com.badoo.reaktive.utils.lock
 import com.badoo.reaktive.utils.InternalReaktiveApi
 
 @InternalReaktiveApi
-actual class Lock {
+actual open class Lock {
 
-    actual fun acquire() {
+    @Suppress("MemberNameEqualsClassName") // Matches expect class
+    actual fun lock() {
         // no-op
     }
 
-    actual fun release() {
+    actual fun unlock() {
         // no-op
     }
 

@@ -27,7 +27,7 @@ class SchedulerCoroutineDispatcherJvmTest {
             delay(500L)
             lock.synchronized {
                 endTimeMillis.value = DefaultClock.uptimeMillis
-                condition.signal()
+                condition.signalAll()
             }
         }
 

@@ -10,6 +10,7 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import platform.posix.ETIMEDOUT
 import platform.posix.PTHREAD_MUTEX_RECURSIVE
 import platform.posix.__darwin_time_t
 import platform.posix.gettimeofday
@@ -31,9 +32,10 @@ import platform.posix.pthread_mutexattr_t
 import platform.posix.timespec
 import platform.posix.timeval
 import kotlin.native.internal.createCleaner
+import kotlin.system.getTimeNanos
 
 @InternalReaktiveApi
-actual class Lock {
+actual open class Lock {
 
     private val arena = Arena()
     private val attr = arena.alloc<pthread_mutexattr_t>()
@@ -49,11 +51,12 @@ actual class Lock {
         pthread_mutex_init(mutex.ptr, attr.ptr)
     }
 
-    actual fun acquire() {
+    @Suppress("MemberNameEqualsClassName") // Matches expect class
+    actual fun lock() {
         pthread_mutex_lock(mutex.ptr)
     }
 
-    actual fun release() {
+    actual fun unlock() {
         pthread_mutex_unlock(mutex.ptr)
     }
 
@@ -86,25 +89,30 @@ actual class Lock {
             pthread_cond_init(cond.ptr, null)
         }
 
-        override fun await(timeoutNanos: Long) {
-            if (timeoutNanos >= 0L) {
-                memScoped {
-                    // can't use monotonic time, pthread_condattr_setclock() nor clock_gettime(),
-                    // iOS does not support it
-                    // can't use NSRecursiveLock and NSCondition,
-                    // it can't wait less then 1 second and lock can't create condition
-                    val tv = alloc<timeval> { gettimeofday(ptr, null) }
-                    val ts = alloc<timespec>()
-                    ts.set(tv)
-                    ts += timeoutNanos
-                    pthread_cond_timedwait(cond.ptr, lockPtr, ts.ptr)
-                }
-            } else {
-                pthread_cond_wait(cond.ptr, lockPtr)
-            }
+        override fun await() {
+            val result = pthread_cond_wait(cond.ptr, lockPtr)
+            check(result == 0) { "Error waiting for condition: $result" }
         }
 
-        override fun signal() {
+        override fun awaitNanos(nanos: Long): Long =
+            memScoped {
+                // can't use monotonic time, pthread_condattr_setclock() nor clock_gettime(),
+                // iOS does not support it
+                // can't use NSRecursiveLock and NSCondition,
+                // it can't wait less than 1 second and lock can't create condition
+                val tv = alloc<timeval> { gettimeofday(ptr, null) }
+                val ts = alloc<timespec> { set(tv) }
+                ts += nanos
+                val startNanos = getTimeNanos()
+
+                return when (val result = pthread_cond_timedwait(cond.ptr, lockPtr, ts.ptr)) {
+                    0 -> startNanos + nanos - getTimeNanos()
+                    ETIMEDOUT -> 0L
+                    else -> error("Error waiting for condition: $result")
+                }
+            }
+
+        override fun signalAll() {
             pthread_cond_broadcast(cond.ptr)
         }
 

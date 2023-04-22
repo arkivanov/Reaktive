@@ -24,7 +24,7 @@ class LooperThreadTest {
         thread.schedule(Unit, startTime) {
             lock.synchronized {
                 isExecuted.value = true
-                condition.signal()
+                condition.signalAll()
             }
         }
 
@@ -45,7 +45,7 @@ class LooperThreadTest {
         thread.schedule(Unit, getTimeMillis()) {
             lock.synchronized {
                 isExecuted.value = true
-                condition.signal()
+                condition.signalAll()
             }
         }
 

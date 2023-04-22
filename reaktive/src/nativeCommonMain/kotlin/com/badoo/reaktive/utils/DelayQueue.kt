@@ -19,7 +19,7 @@ internal class DelayQueue<T : Any> {
     fun terminate() {
         lock.synchronized {
             queue = null
-            condition.signal()
+            condition.signalAll()
         }
     }
 
@@ -27,7 +27,7 @@ internal class DelayQueue<T : Any> {
         lock.synchronized {
             val queue = queue ?: return@synchronized null
             val holder = queue.poll()
-            condition.signal()
+            condition.signalAll()
             holder?.value
         }
 
@@ -37,8 +37,7 @@ internal class DelayQueue<T : Any> {
      */
     @Suppress("NestedBlockDepth")
     fun take(): T? {
-        lock.acquire()
-        try {
+        lock.synchronized {
             while (true) {
                 val queue = queue ?: return null
                 val item: Holder<T>? = queue.peek()
@@ -54,11 +53,9 @@ internal class DelayQueue<T : Any> {
                         return item.value
                     }
 
-                    condition.await(timeoutNanos)
+                    condition.awaitNanos(timeoutNanos)
                 }
             }
-        } finally {
-            lock.release()
         }
     }
 
@@ -70,7 +67,7 @@ internal class DelayQueue<T : Any> {
         lock.synchronized {
             val queue = queue ?: return
             queue.offer(Holder(value, timeMillis))
-            condition.signal()
+            condition.signalAll()
         }
     }
 
