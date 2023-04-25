@@ -9,6 +9,7 @@ import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.change
 import com.badoo.reaktive.utils.atomic.getAndChange
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Returns an [Observable] that mirrors the source [Observable], but drops elements
@@ -37,7 +38,7 @@ fun <T> Observable<T>.debounce(timeoutMillis: Long, scheduler: Scheduler): Obser
 
                     executor.cancel()
 
-                    executor.submit(timeoutMillis) {
+                    executor.submit(delay = timeoutMillis.milliseconds) {
                         pendingValue.change {
                             if (it === newPendingValue) null else it
                         }

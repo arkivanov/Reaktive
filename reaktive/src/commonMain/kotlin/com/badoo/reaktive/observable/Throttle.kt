@@ -5,6 +5,7 @@ import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.scheduler.computationScheduler
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Returns an [Observable] that emits only the first element emitted by the source [Observable] during a time window
@@ -32,7 +33,7 @@ fun <T> Observable<T>.throttle(windowMillis: Long, scheduler: Scheduler = comput
                 override fun onNext(value: T) {
                     if (gate.compareAndSet(false, true)) {
                         emitter.onNext(value)
-                        executor.submit(delayMillis = windowMillis) { gate.value = false }
+                        executor.submit(delay = windowMillis.milliseconds) { gate.value = false }
                     }
                 }
             }

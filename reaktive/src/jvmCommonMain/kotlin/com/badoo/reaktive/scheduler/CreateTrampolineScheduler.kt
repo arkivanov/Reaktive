@@ -4,7 +4,7 @@ actual fun createTrampolineScheduler(): Scheduler =
     TrampolineScheduler(
         sleep = {
             try {
-                Thread.sleep(it)
+                Thread.sleep(it.inWholeMilliseconds)
                 true
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()

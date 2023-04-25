@@ -1,6 +1,7 @@
 package com.badoo.reaktive.single
 
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Signals `onSuccess` with [delayMillis] value after the given [delayMillis] delay.
@@ -11,5 +12,5 @@ fun singleTimer(delayMillis: Long, scheduler: Scheduler): Single<Long> =
     single { emitter ->
         val executor = scheduler.newExecutor()
         emitter.setDisposable(executor)
-        executor.submit(delayMillis) { emitter.onSuccess(delayMillis) }
+        executor.submit(delay = delayMillis.milliseconds) { emitter.onSuccess(delayMillis) }
     }

@@ -5,6 +5,7 @@ import com.badoo.reaktive.base.exceptions.TimeoutException
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Disposes the current [Maybe] if it does not signal within the [timeoutMillis] timeout,
@@ -40,7 +41,7 @@ fun <T> Maybe<T>.timeout(timeoutMillis: Long, scheduler: Scheduler, other: Maybe
                 }
 
                 fun startTimeout() {
-                    executor.submit(timeoutMillis, onTimeout)
+                    executor.submit(delay = timeoutMillis.milliseconds, task = onTimeout)
                 }
             }
 

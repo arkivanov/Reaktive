@@ -6,6 +6,7 @@ import com.badoo.reaktive.completable.CompletableCallbacks
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Returns an [Observable] that emits elements from the source [Observable] and counts a timeout specified by
@@ -43,7 +44,7 @@ fun <T> Observable<T>.timeout(timeoutMillis: Long, scheduler: Scheduler, other: 
                 }
 
                 fun startTimeout() {
-                    executor.submit(timeoutMillis, onTimeout)
+                    executor.submit(delay = timeoutMillis.milliseconds, task = onTimeout)
                 }
             }
 
