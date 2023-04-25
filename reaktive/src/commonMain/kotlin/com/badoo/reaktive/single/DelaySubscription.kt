@@ -3,6 +3,7 @@ package com.badoo.reaktive.single
 import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Delays the actual subscription to the [Single] for the specified time.
@@ -16,7 +17,7 @@ fun <T> Single<T>.delaySubscription(delayMillis: Long, scheduler: Scheduler): Si
         val executor = scheduler.newExecutor()
         emitter.setDisposable(executor)
 
-        executor.submit(delayMillis) {
+        executor.submit(delay = delayMillis.milliseconds) {
             emitter.tryCatch {
                 subscribe(
                     object : SingleObserver<T>, SingleCallbacks<T> by emitter {

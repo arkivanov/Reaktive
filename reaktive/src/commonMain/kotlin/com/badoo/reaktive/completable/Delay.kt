@@ -4,6 +4,7 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Delays `onComplete` signal from the current [Completable] for the specified time.
@@ -25,12 +26,12 @@ fun Completable.delay(delayMillis: Long, scheduler: Scheduler, delayError: Boole
                 }
 
                 override fun onComplete() {
-                    executor.submit(delayMillis, emitter::onComplete)
+                    executor.submit(delay = delayMillis.milliseconds, task = emitter::onComplete)
                 }
 
                 override fun onError(error: Throwable) {
                     if (delayError) {
-                        executor.submit(delayMillis) {
+                        executor.submit(delay = delayMillis.milliseconds) {
                             emitter.onError(error)
                         }
                     } else {

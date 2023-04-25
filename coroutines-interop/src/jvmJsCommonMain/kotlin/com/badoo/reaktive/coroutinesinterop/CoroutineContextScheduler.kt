@@ -10,12 +10,15 @@ import com.badoo.reaktive.utils.clock.Clock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
 
 @ExperimentalCoroutinesApi // Channels are experimental
 internal class CoroutineContextScheduler(
@@ -31,6 +34,7 @@ internal class CoroutineContextScheduler(
         disposables.dispose()
     }
 
+    @OptIn(ObsoleteCoroutinesApi::class) // Replace channels with SharedFlow
     private class ExecutorImpl(
         context: CoroutineContext,
         private val clock: Clock,
@@ -78,16 +82,16 @@ internal class CoroutineContextScheduler(
             disposables -= this
         }
 
-        override fun submit(delayMillis: Long, task: () -> Unit) {
-            submitRepeating(delayMillis, -1L, task)
-        }
+        override fun submit(delay: Duration, period: Duration, task: () -> Unit) {
+            if (isDisposed) {
+                return
+            }
 
-        override fun submitRepeating(startDelayMillis: Long, periodMillis: Long, task: () -> Unit) {
             channelRef.value?.channel?.apply {
                 trySend(
                     Task(
-                        startAtMillis = clock.uptime.inWholeMilliseconds + startDelayMillis,
-                        periodMillis = periodMillis,
+                        startTime = clock.uptime + delay,
+                        period = period,
                         task = task
                     )
                 )
@@ -95,39 +99,33 @@ internal class CoroutineContextScheduler(
         }
 
         private suspend fun execute(scope: CoroutineScope, task: Task) {
-            if (clock.uptime.inWholeMilliseconds < task.startAtMillis) {
+            if (clock.uptime < task.startTime) {
                 scope.launch {
-                    delayUntilStart(task.startAtMillis)
-                    repeatTask(task.periodMillis, task.task)
+                    delayUntilStart(task.startTime)
+                    executeAndRepeatIfNeeded(task.period, task.task)
                 }
             } else {
-                repeatTask(task.periodMillis, task.task)
+                executeAndRepeatIfNeeded(task.period, task.task)
             }
         }
 
-        private suspend fun repeatTask(periodMillis: Long, task: () -> Unit) {
+        private suspend fun executeAndRepeatIfNeeded(period: Duration, task: () -> Unit) {
+            if (period.isInfinite()) {
+                mutex.withLock { task() }
+                return
+            }
+
             while (true) {
-                val nextStartAtMillis = clock.uptime.inWholeMilliseconds + periodMillis
-
-                mutex.lock()
-                try {
-                    task()
-                } finally {
-                    mutex.unlock()
-                }
-
-                if (periodMillis < 0) {
-                    break
-                }
-
-                delayUntilStart(nextStartAtMillis)
+                val nextStartTime = clock.uptime + period
+                mutex.withLock { task() }
+                delayUntilStart(nextStartTime)
             }
         }
 
-        private suspend fun delayUntilStart(startAtMillis: Long) {
-            val uptimeMillis = clock.uptime.inWholeMilliseconds
-            if (uptimeMillis < startAtMillis) {
-                delay(startAtMillis - uptimeMillis)
+        private suspend fun delayUntilStart(startTime: Duration) {
+            val uptime = clock.uptime
+            if (uptime < startTime) {
+                delay(startTime - uptime)
             }
         }
 
@@ -142,8 +140,8 @@ internal class CoroutineContextScheduler(
         }
 
         private data class Task(
-            val startAtMillis: Long,
-            val periodMillis: Long,
+            val startTime: Duration,
+            val period: Duration,
             val task: () -> Unit
         )
     }

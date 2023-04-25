@@ -4,6 +4,7 @@ import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Delays `onSuccess` signal from the current [Single] for the specified time.
@@ -25,14 +26,14 @@ fun <T> Single<T>.delay(delayMillis: Long, scheduler: Scheduler, delayError: Boo
                 }
 
                 override fun onSuccess(value: T) {
-                    executor.submit(delayMillis) {
+                    executor.submit(delay = delayMillis.milliseconds) {
                         emitter.onSuccess(value)
                     }
                 }
 
                 override fun onError(error: Throwable) {
                     if (delayError) {
-                        executor.submit(delayMillis) {
+                        executor.submit(delay = delayMillis.milliseconds) {
                             emitter.onError(error)
                         }
                     } else {

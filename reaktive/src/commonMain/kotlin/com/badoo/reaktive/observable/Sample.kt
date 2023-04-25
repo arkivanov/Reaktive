@@ -6,6 +6,7 @@ import com.badoo.reaktive.disposable.plusAssign
 import com.badoo.reaktive.scheduler.Scheduler
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.getAndChange
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Returns an [Observable] that emits the most recently emitted element (if any)
@@ -27,7 +28,7 @@ fun <T> Observable<T>.sample(windowMillis: Long, scheduler: Scheduler): Observab
                 override fun onSubscribe(disposable: Disposable) {
                     disposables += disposable
 
-                    executor.submitRepeating(startDelayMillis = windowMillis, periodMillis = windowMillis) {
+                    executor.submit(delay = windowMillis.milliseconds, period = windowMillis.milliseconds) {
                         lastValue.getAndChange { null }?.also {
                             emitter.onNext(it.value)
                         }

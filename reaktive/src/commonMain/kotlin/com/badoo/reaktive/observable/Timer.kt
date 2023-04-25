@@ -1,6 +1,7 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Signals `onNext` with [delayMillis] value after the given [delayMillis] delay, and then completes.
@@ -11,7 +12,7 @@ fun observableTimer(delayMillis: Long, scheduler: Scheduler): Observable<Long> =
     observable { emitter ->
         val executor = scheduler.newExecutor()
         emitter.setDisposable(executor)
-        executor.submit(delayMillis) {
+        executor.submit(delay = delayMillis.milliseconds) {
             emitter.onNext(delayMillis)
             emitter.onComplete()
         }

@@ -3,6 +3,7 @@ package com.badoo.reaktive.completable
 import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Delays the actual subscription to the [Completable] for the specified time.
@@ -16,7 +17,7 @@ fun Completable.delaySubscription(delayMillis: Long, scheduler: Scheduler): Comp
         val executor = scheduler.newExecutor()
         emitter.setDisposable(executor)
 
-        executor.submit(delayMillis) {
+        executor.submit(delay = delayMillis.milliseconds) {
             emitter.tryCatch {
                 subscribe(
                     object : CompletableObserver, CompletableCallbacks by emitter {

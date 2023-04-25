@@ -5,12 +5,12 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.disposable.minusAssign
 import com.badoo.reaktive.disposable.plusAssign
-import com.badoo.reaktive.utils.NANOS_IN_MILLI
 import platform.darwin.DISPATCH_TIME_NOW
 import platform.darwin.dispatch_after
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.dispatch_time
-import kotlin.native.concurrent.FreezableAtomicReference
+import kotlin.native.concurrent.AtomicReference
+import kotlin.time.Duration
 
 internal class MainScheduler : Scheduler {
 
@@ -32,27 +32,32 @@ internal class MainScheduler : Scheduler {
             disposables += this
         }
 
-        override fun submit(delayMillis: Long, task: () -> Unit) {
+        override fun submit(delay: Duration, period: Duration, task: () -> Unit) {
+            if (isDisposed) {
+                return
+            }
+
             operations.purge()
-            val operation = Operation(task).addTo(operations)
-            dispatch_after(
-                dispatch_time(DISPATCH_TIME_NOW, delayMillis.toNanos()),
-                dispatch_get_main_queue(),
-                operation
-            )
+
+            val operation =
+                if (period.isInfinite()) {
+                    Operation(task)
+                } else {
+                    Operation {
+                        task()
+                        submit(delay, period, task)
+                    }
+                }
+
+            operation.addTo(operations)
+            submit(delay, operation)
         }
 
-        override fun submitRepeating(startDelayMillis: Long, periodMillis: Long, task: () -> Unit) {
-            operations.purge()
-            val operation =
-                Operation {
-                    task()
-                    submitRepeating(periodMillis, periodMillis, task)
-                }.addTo(operations)
+        private fun submit(delay: Duration, task: () -> Unit) {
             dispatch_after(
-                dispatch_time(DISPATCH_TIME_NOW, startDelayMillis.toNanos()),
+                dispatch_time(DISPATCH_TIME_NOW, delay.inWholeNanoseconds),
                 dispatch_get_main_queue(),
-                operation
+                task,
             )
         }
 
@@ -72,7 +77,7 @@ internal class MainScheduler : Scheduler {
             task: () -> Unit
         ) : () -> Unit, Disposable {
 
-            private val taskReference = FreezableAtomicReference<(() -> Unit)?>(task)
+            private val taskReference = AtomicReference<(() -> Unit)?>(task)
 
             override fun invoke() {
                 val task: (() -> Unit)? = taskReference.value
@@ -87,9 +92,5 @@ internal class MainScheduler : Scheduler {
                 taskReference.value = null
             }
         }
-    }
-
-    private companion object {
-        private fun Long.toNanos(): Long = this * NANOS_IN_MILLI
     }
 }

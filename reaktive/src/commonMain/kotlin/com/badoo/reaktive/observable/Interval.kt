@@ -1,6 +1,7 @@
 package com.badoo.reaktive.observable
 
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Returns an [Observable] that emits `0L` after [startDelayMillis] and
@@ -16,7 +17,7 @@ fun observableInterval(periodMillis: Long, startDelayMillis: Long = periodMillis
         emitter.setDisposable(executor)
 
         var count = 0L
-        executor.submitRepeating(startDelayMillis, periodMillis) {
+        executor.submit(delay = startDelayMillis.milliseconds, period = periodMillis.milliseconds) {
             emitter.onNext(count++)
         }
     }

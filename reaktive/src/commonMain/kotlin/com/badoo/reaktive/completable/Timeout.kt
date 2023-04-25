@@ -5,6 +5,7 @@ import com.badoo.reaktive.base.exceptions.TimeoutException
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.addTo
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Disposes the current [Completable] if it does not signal within the [timeoutMillis] timeout, and subscribes to [other] [Completable] if provided.
@@ -38,7 +39,7 @@ fun Completable.timeout(timeoutMillis: Long, scheduler: Scheduler, other: Comple
         scheduler
             .newExecutor()
             .addTo(upstreamObserver)
-            .submit(timeoutMillis, onTimeout)
+            .submit(delay = timeoutMillis.milliseconds, task = onTimeout)
 
         subscribe(upstreamObserver)
     }

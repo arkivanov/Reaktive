@@ -3,6 +3,7 @@ package com.badoo.reaktive.observable
 import com.badoo.reaktive.base.tryCatch
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.scheduler.Scheduler
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Delays the actual subscription to the [Observable] for the specified time.
@@ -16,7 +17,7 @@ fun <T> Observable<T>.delaySubscription(delayMillis: Long, scheduler: Scheduler)
         val executor = scheduler.newExecutor()
         emitter.setDisposable(executor)
 
-        executor.submit(delayMillis) {
+        executor.submit(delay = delayMillis.milliseconds) {
             emitter.tryCatch {
                 subscribe(
                     object : ObservableObserver<T>, ObservableCallbacks<T> by emitter {

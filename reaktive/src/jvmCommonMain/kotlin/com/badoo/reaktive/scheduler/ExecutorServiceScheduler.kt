@@ -8,6 +8,7 @@ import com.badoo.reaktive.utils.handleReaktiveError
 import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
 internal class ExecutorServiceScheduler(
     private val executorServiceStrategy: ExecutorServiceStrategy
@@ -51,21 +52,27 @@ internal class ExecutorServiceScheduler(
             }
         }
 
-        override fun submit(delayMillis: Long, task: () -> Unit) {
-            executeIfNotRecycled {
-                it.schedule(wrapSchedulerTaskSafe(task), delayMillis, TimeUnit.MILLISECONDS)
+        override fun submit(delay: Duration, period: Duration, task: () -> Unit) {
+            if (isDisposed) {
+                return
             }
-                ?.toDisposable()
-                ?.let(taskDisposables::add)
-        }
 
-        override fun submitRepeating(startDelayMillis: Long, periodMillis: Long, task: () -> Unit) {
+            if (period.isInfinite()) {
+                executeIfNotRecycled {
+                    it.schedule(wrapSchedulerTaskSafe(task), delay.inWholeMicroseconds, TimeUnit.MICROSECONDS)
+                }
+                    ?.toDisposable()
+                    ?.let(taskDisposables::add)
+
+                return
+            }
+
             executeIfNotRecycled {
                 it.scheduleAtFixedRate(
                     wrapSchedulerTaskSafe(task),
-                    startDelayMillis,
-                    periodMillis,
-                    TimeUnit.MILLISECONDS
+                    delay.inWholeMicroseconds,
+                    period.inWholeMicroseconds,
+                    TimeUnit.MICROSECONDS,
                 )
             }
                 ?.toDisposable()
