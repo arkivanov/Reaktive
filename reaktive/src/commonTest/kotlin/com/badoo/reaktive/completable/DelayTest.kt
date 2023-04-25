@@ -8,6 +8,8 @@ import com.badoo.reaktive.test.completable.assertNotComplete
 import com.badoo.reaktive.test.completable.test
 import com.badoo.reaktive.test.scheduler.TestScheduler
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class DelayTest :
     CompletableToCompletableTests by CompletableToCompletableTestsImpl({ delay(0L, TestScheduler()) }),
@@ -31,7 +33,7 @@ class DelayTest :
     @Test
     fun does_not_complete_IF_timeout_not_reached() {
         upstream.onComplete()
-        timer.advanceBy(999L)
+        timer.advanceBy(999.milliseconds)
 
         observer.assertNotComplete()
     }
@@ -39,7 +41,7 @@ class DelayTest :
     @Test
     fun completes_WHEN_timeout_reached() {
         upstream.onComplete()
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.seconds)
 
         observer.assertComplete()
     }
@@ -59,6 +61,6 @@ class DelayTest :
 
         upstream.onError(Throwable())
 
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.seconds)
     }
 }

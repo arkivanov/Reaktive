@@ -11,6 +11,8 @@ import com.badoo.reaktive.test.scheduler.TestScheduler
 import com.badoo.reaktive.test.scheduler.assertAllExecutorsDisposed
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class TimerTest {
 
@@ -36,44 +38,44 @@ class TimerTest {
 
     @Test
     fun does_not_complete_IF_timeout_not_reached() {
-        timer.advanceBy(999L)
+        timer.advanceBy(999.milliseconds)
         observer.assertNotComplete()
     }
 
     @Test
     fun does_not_call_onError_IF_timeout_not_reached() {
-        timer.advanceBy(999L)
+        timer.advanceBy(999.milliseconds)
         observer.assertNotError()
     }
 
     @Test
     fun completes_WHEN_timeout_reached() {
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.seconds)
         observer.assertComplete()
     }
 
     @Test
     fun does_not_call_onError_WHEN_timeout_reached() {
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.seconds)
         observer.assertNotError()
     }
 
     @Test
     fun disposes_WHEN_timeout_reached() {
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.milliseconds)
         observer.assertDisposed()
     }
 
     @Test
     fun disposes_executor_WHEN_timeout_reached() {
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.milliseconds)
         scheduler.assertAllExecutorsDisposed()
     }
 
     @Test
     fun onComplete_ignored_AFTER_dispose() {
         observer.dispose()
-        timer.advanceBy(1000L)
+        timer.advanceBy(1.milliseconds)
         observer.assertNotComplete()
     }
 

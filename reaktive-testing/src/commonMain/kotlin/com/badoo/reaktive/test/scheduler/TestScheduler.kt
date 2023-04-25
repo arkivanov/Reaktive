@@ -56,7 +56,7 @@ class TestScheduler(
 
     private fun processActual() {
         while (true) {
-            val task = tasks.value.firstOrNull()?.takeIf { it.startTime <= _timer.targetMillis.milliseconds } ?: break
+            val task = tasks.value.firstOrNull()?.takeIf { it.startTime <= _timer.targetTime } ?: break
             updateTasks {
                 removeAt(0)
                 if (!task.period.isNegative()) {
@@ -65,14 +65,14 @@ class TestScheduler(
                 }
             }
 
-            _timer.millis = task.startTime.inWholeMilliseconds
+            _timer.time = task.startTime
 
             if (!task.executor.isDisposed) {
                 task.task()
             }
         }
 
-        _timer.millis = _timer.targetMillis
+        _timer.time = _timer.targetTime
     }
 
     private fun processIfNeeded() {
@@ -88,26 +88,27 @@ class TestScheduler(
     }
 
     interface Timer {
-        val millis: Long
+        val time: Duration
 
-        fun advanceBy(millis: Long)
+        fun advanceBy(duration: Duration)
     }
 
     private inner class TimerImpl : Timer {
         private val _millis = AtomicLong()
-        override var millis: Long
-            get() = _millis.value
+
+        override var time: Duration
+            get() = _millis.value.milliseconds
             set(value) {
-                _millis.value = value
+                _millis.value = value.inWholeMilliseconds
             }
 
         private val _requestedMillis = AtomicLong()
-        val targetMillis: Long get() = _requestedMillis.value
+        val targetTime: Duration get() = _requestedMillis.value.milliseconds
 
-        override fun advanceBy(millis: Long) {
-            require(millis >= 0L) { "Millis must not be negative" }
+        override fun advanceBy(duration: Duration) {
+            require(!duration.isNegative()) { "Millis must not be negative" }
 
-            _requestedMillis.addAndGet(millis)
+            _requestedMillis.addAndGet(duration.inWholeMilliseconds)
             processIfNeeded()
         }
     }
@@ -129,7 +130,7 @@ class TestScheduler(
             updateTasks {
                 add(
                     Task(
-                        startTime = timer.millis.milliseconds + startDelay,
+                        startTime = timer.time + startDelay,
                         period = period,
                         executor = this@ExecutorImpl,
                         task = task
