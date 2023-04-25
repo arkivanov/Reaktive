@@ -5,6 +5,7 @@ import android.os.Looper
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.minusAssign
 import com.badoo.reaktive.disposable.plusAssign
+import kotlin.time.Duration
 
 internal class MainScheduler : Scheduler {
 
@@ -41,25 +42,27 @@ internal class MainScheduler : Scheduler {
             }
         }
 
-        override fun submit(delayMillis: Long, task: () -> Unit) {
-            executeIfNotRecycled {
-                it.postDelayed(task, delayMillis)
-            }
-        }
+        override fun submit(startDelay: Duration, period: Duration, task: () -> Unit) {
+            if (period.isInfinite()) {
+                executeIfNotRecycled {
+                    it.postDelayed(task, startDelay.inWholeMilliseconds)
+                }
 
-        override fun submitRepeating(startDelayMillis: Long, periodMillis: Long, task: () -> Unit) {
+                return
+            }
+
             val runnable =
                 object : Runnable {
                     override fun run() {
                         executeIfNotRecycled {
-                            it.postDelayed(this, periodMillis)
+                            it.postDelayed(this, period.inWholeMilliseconds)
                         }
                         task()
                     }
                 }
 
             executeIfNotRecycled {
-                it.postDelayed(runnable, startDelayMillis)
+                it.postDelayed(runnable, startDelay.inWholeMilliseconds)
             }
         }
 
