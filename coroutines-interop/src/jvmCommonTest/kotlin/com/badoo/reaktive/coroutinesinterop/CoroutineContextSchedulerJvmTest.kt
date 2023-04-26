@@ -1,12 +1,13 @@
 package com.badoo.reaktive.coroutinesinterop
 
-import com.badoo.reaktive.utils.NANOS_IN_MILLI
-import com.badoo.reaktive.utils.atomic.AtomicLong
 import com.badoo.reaktive.utils.clock.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CoroutineContextSchedulerJvmTest {
@@ -27,7 +28,7 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_task_WHEN_delay_not_reached() {
         executor.submit(delayMillis = 100L, task = task::run)
-        advanceTimeBy(99L)
+        advanceTimeBy(99.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -35,7 +36,7 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun executes_task_WHEN_delay_reached() {
         executor.submit(delayMillis = 100L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertSingleRun()
     }
@@ -50,7 +51,7 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_WHEN_startDelay_not_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(99L)
+        advanceTimeBy(99.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -58,7 +59,7 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun executes_repeating_task_WHEN_startDelay_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertSingleRun()
     }
@@ -66,9 +67,9 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_second_time_WHEN_period_not_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
         task.reset()
-        advanceTimeBy(999L)
+        advanceTimeBy(999.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -76,9 +77,9 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun executes_repeating_task_second_time_WHEN_period_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
         task.reset()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertSingleRun()
     }
@@ -86,10 +87,10 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_third_time_WHEN_period_not_reached_second_time() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
-        advanceTimeBy(1000L)
+        advanceTimeBy(100.milliseconds)
+        advanceTimeBy(1.seconds)
         task.reset()
-        advanceTimeBy(999L)
+        advanceTimeBy(999.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -97,10 +98,10 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun executes_repeating_task_third_time_WHEN_period_reached_second_time() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
-        advanceTimeBy(1000L)
+        advanceTimeBy(100.milliseconds)
+        advanceTimeBy(1.seconds)
         task.reset()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertSingleRun()
     }
@@ -109,7 +110,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_task_WHEN_executor_cancelled_and_delay_reached() {
         executor.submit(delayMillis = 100L, task = task::run)
         executor.cancel()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -118,7 +119,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_repeating_task_WHEN_executor_cancelled_and_startDelay_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
         executor.cancel()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -126,10 +127,10 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_second_time_WHEN_executor_cancelled_and_period_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
         task.reset()
         executor.cancel()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
@@ -137,11 +138,11 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_third_time_WHEN_executor_cancelled_and_period_reached_second_time() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
-        advanceTimeBy(1000L)
+        advanceTimeBy(100.milliseconds)
+        advanceTimeBy(1.seconds)
         task.reset()
         executor.cancel()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
@@ -150,7 +151,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_task_WHEN_executor_disposed_and_delay_reached() {
         executor.submit(delayMillis = 100L, task = task::run)
         executor.dispose()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -159,7 +160,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_repeating_task_WHEN_executor_disposed_and_startDelay_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
         executor.dispose()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -167,10 +168,10 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_second_time_WHEN_executor_disposed_and_period_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
         task.reset()
         executor.dispose()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
@@ -178,11 +179,11 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_third_time_WHEN_executor_disposed_and_period_reached_second_time() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
-        advanceTimeBy(1000L)
+        advanceTimeBy(100.milliseconds)
+        advanceTimeBy(1.seconds)
         task.reset()
         executor.dispose()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
@@ -191,7 +192,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_task_WHEN_scheduler_destroyed_and_delay_reached() {
         executor.submit(delayMillis = 100L, task = task::run)
         scheduler.destroy()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -200,7 +201,7 @@ class CoroutineContextSchedulerJvmTest {
     fun does_not_execute_repeating_task_WHEN_scheduler_destroyed_and_startDelay_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
         scheduler.destroy()
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
 
         task.assertDidNotRun()
     }
@@ -208,10 +209,10 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_second_time_WHEN_scheduler_destroyed_and_period_reached() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
+        advanceTimeBy(100.milliseconds)
         task.reset()
         scheduler.destroy()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
@@ -219,27 +220,29 @@ class CoroutineContextSchedulerJvmTest {
     @Test
     fun does_not_execute_repeating_task_third_time_WHEN_scheduler_destroyed_and_period_reached_second_time() {
         executor.submitRepeating(startDelayMillis = 100L, periodMillis = 1000L, task = task::run)
-        advanceTimeBy(100L)
-        advanceTimeBy(1000L)
+        advanceTimeBy(100.milliseconds)
+        advanceTimeBy(1.seconds)
         task.reset()
         scheduler.destroy()
-        advanceTimeBy(1000L)
+        advanceTimeBy(1.seconds)
 
         task.assertDidNotRun()
     }
 
-    private fun advanceTimeBy(millis: Long) {
-        clock.advanceBy(millis)
-        dispatcher.advanceTimeBy(millis)
+    private fun advanceTimeBy(duration: Duration) {
+        clock.advanceBy(duration)
+
+        dispatcher.scheduler.apply {
+            advanceTimeBy(duration.inWholeMilliseconds)
+            runCurrent()
+        }
     }
 
     private class TestClock : Clock {
-        private val _uptimeMillis = AtomicLong()
-        override val uptimeMillis: Long get() = _uptimeMillis.value
-        override val uptimeNanos: Long get() = uptimeMillis * NANOS_IN_MILLI
+        override var uptime: Duration = Duration.ZERO
 
-        fun advanceBy(millis: Long) {
-            _uptimeMillis.addAndGet(millis)
+        fun advanceBy(duration: Duration) {
+            uptime += duration
         }
     }
 
