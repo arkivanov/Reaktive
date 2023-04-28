@@ -52,7 +52,7 @@ internal class MainScheduler : Scheduler {
             var id: dynamic = undefined
 
             id =
-                globalThis.setInterval(
+                globalThis.setTimeout(
                     {
                         intervalIds.remove(id)
                         task()
