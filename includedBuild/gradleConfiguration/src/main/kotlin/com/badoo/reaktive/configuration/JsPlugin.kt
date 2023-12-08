@@ -29,14 +29,30 @@ class JsPlugin : Plugin<Project> {
 
                 disableIfUndefined(Target.JS)
             }
+
+            wasmJs {
+                browser()
+                disableIfUndefined(Target.JS)
+            }
+
             sourceSets.getByName("jsMain") {
                 dependencies {
-                    implementation(project.getLibrary("kotlin-stdlib-js"))
+                    implementation(project.getLibrary("kotlin-stdlib"))
                 }
             }
             sourceSets.getByName("jsTest") {
                 dependencies {
-                    implementation(project.getLibrary("kotlin-test-js"))
+                    implementation(project.getLibrary("kotlin-test"))
+                }
+            }
+            sourceSets.getByName("wasmJsMain") {
+                dependencies {
+                    implementation(project.getLibrary("kotlin-stdlib"))
+                }
+            }
+            sourceSets.getByName("wasmJsTest") {
+                dependencies {
+                    implementation(project.getLibrary("kotlin-test"))
                 }
             }
         }

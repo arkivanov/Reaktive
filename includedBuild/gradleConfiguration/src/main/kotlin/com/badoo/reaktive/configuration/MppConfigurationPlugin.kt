@@ -27,10 +27,9 @@ class MppConfigurationPlugin : Plugin<Project> {
         target.version = target.findProperty("reaktive_version") as Any
         target.extensions.configure(KotlinMultiplatformExtension::class.java) {
             sourceSets {
-                maybeCreate("commonMain").dependencies { implementation(target.getLibrary("kotlin-stdlib-common")) }
+                maybeCreate("commonMain").dependencies { implementation(target.getLibrary("kotlin-stdlib")) }
                 maybeCreate("commonTest").dependencies {
-                    implementation(target.getLibrary("kotlin-test-common"))
-                    implementation(target.getLibrary("kotlin-test-annotations"))
+                    implementation(target.getLibrary("kotlin-test"))
                 }
             }
 
@@ -80,8 +79,14 @@ class MppConfigurationPlugin : Plugin<Project> {
                 maybeCreate("androidMain").dependsOn(getByName("jvmCommonMain"))
                 maybeCreate("androidUnitTest").dependsOn(getByName("jvmCommonTest"))
 
-                maybeCreate("jsMain").dependsOn(getByName("jvmJsCommonMain"))
-                maybeCreate("jsTest").dependsOn(getByName("jvmJsCommonTest"))
+                maybeCreate("jsCommonMain").dependsOn(getByName("jvmJsCommonMain"))
+                maybeCreate("jsCommonTest").dependsOn(getByName("jvmJsCommonTest"))
+
+                maybeCreate("jsMain").dependsOn(getByName("jsCommonMain"))
+                maybeCreate("jsTest").dependsOn(getByName("jsCommonTest"))
+
+                maybeCreate("wasmJsMain").dependsOn(getByName("jsCommonMain"))
+                maybeCreate("wasmJsTest").dependsOn(getByName("jsCommonTest"))
 
                 maybeCreate("nativeCommonMain").dependsOn(getByName("jvmNativeCommonMain"))
                 maybeCreate("nativeCommonTest").dependsOn(getByName("jvmNativeCommonTest"))
@@ -162,7 +167,7 @@ class MppConfigurationPlugin : Plugin<Project> {
             }
             sourceSets {
                 maybeCreate("androidMain").dependencies { implementation(project.getLibrary("kotlin-stdlib")) }
-                maybeCreate("androidUnitTest").dependencies { implementation(project.getLibrary("kotlin-test-junit")) }
+                maybeCreate("androidUnitTest").dependencies { implementation(project.getLibrary("kotlin-test")) }
             }
         }
     }
@@ -179,7 +184,7 @@ class MppConfigurationPlugin : Plugin<Project> {
             }
             sourceSets {
                 maybeCreate("jvmMain").dependencies { implementation(project.getLibrary("kotlin-stdlib")) }
-                maybeCreate("jvmTest").dependencies { implementation(project.getLibrary("kotlin-test-junit")) }
+                maybeCreate("jvmTest").dependencies { implementation(project.getLibrary("kotlin-test")) }
             }
         }
     }

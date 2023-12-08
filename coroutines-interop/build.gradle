@@ -15,6 +15,9 @@ kotlin {
                 implementation libs.kotlinx.coroutines.core
                 implementation project(':reaktive')
                 implementation project(':utils-internal')
+
+                // Workaround: https://github.com/Kotlin/kotlinx.coroutines/issues/3968
+                implementation "org.jetbrains.kotlinx:atomicfu:0.23.1"
             }
         }
 
